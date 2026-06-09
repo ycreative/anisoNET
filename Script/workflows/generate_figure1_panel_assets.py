@@ -19,7 +19,7 @@ PROJECT_ROOT = Path(os.environ.get("ANISONET_PROJECT_ROOT", Path(__file__).resol
 ROOT = Path(os.environ.get("ANISONET_ANALYSIS_ROOT", PROJECT_ROOT / "codexAnalysis"))
 OUT_DIR = ROOT / "manuscript_figures" / "Figure1_method_overview"
 SOURCE_ASSET_DIR = OUT_DIR / "source_assets"
-D_SCHEMATIC_ASSET = "Fig1D_barrier_constrained_schematic_v2.png"
+D_SCHEMATIC_ASSET = "Fig1D_continuous_resistance_field_schematic_v4.png"
 
 SAMPLE = "GSM5773457_Old_mouse_brain_A1-2"
 TASK = "Apoe_CNS_Myelin"
@@ -298,12 +298,21 @@ def fig1a_data_and_task_definition(data: dict[str, np.ndarray]) -> None:
 
     ax4 = fig.add_subplot(gs[0, 3])
     ax4.axis("off")
-    ax4.set_title("Barrier-constrained task", fontsize=8.2, fontweight="bold", pad=3)
+    ax4.set_title("Resistance-constrained task", fontsize=8.2, fontweight="bold", pad=3)
     ax4.add_patch(Rectangle((0.10, 0.18), 0.80, 0.66, facecolor="#f7f7f5", edgecolor="#b6b6b6", linewidth=0.5))
-    ax4.plot([0.22, 0.78], [0.42, 0.42], color="#2266aa", linewidth=5, solid_capstyle="round")
-    ax4.scatter([0.28, 0.72], [0.62, 0.26], s=52, c=["#d94841", "#7c8a99"], edgecolors="white", linewidths=0.6)
-    ax4.add_patch(FancyArrowPatch((0.30, 0.60), (0.70, 0.28), arrowstyle="-|>", mutation_scale=9, linewidth=0.8, color="#7c8a99", linestyle="--"))
-    ax4.text(0.15, 0.08, "Geometric proximity can conflict\nwith anatomical resistance.", fontsize=6.1, color="#263238")
+    for radius, alpha in [(0.25, 0.10), (0.19, 0.16), (0.13, 0.24)]:
+        ax4.add_patch(Circle((0.42, 0.50), radius, facecolor="#d94841", edgecolor="none", alpha=alpha))
+    resistance_patches = [
+        (0.32, 0.39, 0.15, 0.07, 26),
+        (0.53, 0.56, 0.17, 0.08, -18),
+        (0.62, 0.33, 0.12, 0.06, 14),
+    ]
+    for cx, cy, w0, h0, angle in resistance_patches:
+        ax4.add_patch(Ellipse((cx, cy), w0, h0, angle=angle, facecolor="#2266aa", edgecolor="none", alpha=0.20))
+        ax4.add_patch(Ellipse((cx, cy), w0 * 0.55, h0 * 0.55, angle=angle, facecolor="#2266aa", edgecolor="none", alpha=0.28))
+    ax4.scatter([0.42, 0.68], [0.50, 0.45], s=[54, 38], c=["#d94841", "#7c8a99"], edgecolors="white", linewidths=0.6)
+    ax4.add_patch(FancyArrowPatch((0.46, 0.50), (0.66, 0.46), arrowstyle="-|>", mutation_scale=8, linewidth=0.75, color="#7c8a99", linestyle="--", connectionstyle="arc3,rad=-0.25"))
+    ax4.text(0.15, 0.08, "Local resistance attenuates\nspread around the source.", fontsize=6.1, color="#263238")
     save_panel(fig, "Fig1A_data_and_task_definition")
 
 
@@ -387,7 +396,7 @@ def fig1d_barrier_mechanism_explanation() -> None:
     ax = fig.add_subplot(111)
     image = Image.open(schematic_path).convert("RGB")
     ax.imshow(image)
-    ax.set_title("Barrier-constrained attenuation", fontsize=9.0, fontweight="bold", pad=3)
+    ax.set_title("Continuous resistance-modulated spread", fontsize=9.0, fontweight="bold", pad=3)
     ax.set_xticks([])
     ax.set_yticks([])
     for spine in ax.spines.values():
@@ -494,7 +503,7 @@ Use these panels for the current GPB-style Figure 1 method overview:
 Current revision note:
 
 - Figure 1 now uses real GSE193107 old A1 Apoe/CNS-myelin data as the visual anchor.
-- The figure defines data inputs, task-specific priors, field construction, scalar PINN architecture, barrier mechanism, representative output, and local zoom QC.
+- The figure defines data inputs, task-specific priors, field construction, scalar PINN architecture, continuous resistance mechanism, representative output, and local zoom QC.
 - Panel letters are intentionally not embedded in panel assets; add final A-E labels manually during Inkscape assembly.
 - The rough assembly is for orientation only; final journal spacing and typography should be refined manually.
 """

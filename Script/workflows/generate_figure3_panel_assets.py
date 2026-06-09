@@ -21,6 +21,19 @@ SEED0 = SYN_ROOT / "seed0"
 PREFLIGHT = ROOT / "preflight" / "brain_aging_gse193107" / "GSM5773457_Old_mouse_brain_A1-2" / "Apoe_CNS_Myelin"
 HELDOUT = ROOT / "heldout" / "brain_aging_gse193107" / "summary" / "heldout_group_summary.csv"
 
+PAPER_COLORS = {
+    "teal": "#4C9A91",
+    "blue": "#5E81AC",
+    "terracotta": "#C36F5B",
+    "lavender": "#8C7BB7",
+    "ochre": "#C7A35A",
+    "sage": "#7BA05B",
+    "slate": "#7E8796",
+    "dark": "#2F3A45",
+}
+SPLIT_COLORS = {"20/80": PAPER_COLORS["blue"], "80/20": PAPER_COLORS["teal"]}
+GENE_COLORS = {"Apoe": PAPER_COLORS["teal"], "Gfap": PAPER_COLORS["lavender"]}
+
 
 def setup() -> None:
     mpl.rcParams.update(
@@ -90,13 +103,12 @@ def fig3a_heldout_benchmark() -> None:
         sem=("test_pearson_sem", lambda x: float(np.sqrt(np.sum(np.square(x))) / len(x))),
     )
     x_base = np.arange(len(keep))
-    width = 0.36
-    colors = {"Apoe": "#4C78A8", "Gfap": "#B279A2"}
+    width = 0.30
     fig, ax = plt.subplots(figsize=(5.9, 2.7))
     panel_label(ax, "A", x=-0.12, y=1.12)
     for i, gene in enumerate(["Apoe", "Gfap"]):
         sub = grouped[grouped["target_gene"] == gene].set_index("method_label").reindex(keep)
-        ax.bar(x_base + (i - 0.5) * width, sub["mean"], yerr=sub["sem"], width=width, label=gene, color=colors[gene], edgecolor="#222222", linewidth=0.5)
+        ax.bar(x_base + (i - 0.5) * width, sub["mean"], yerr=sub["sem"], width=width, label=gene, color=GENE_COLORS[gene], edgecolor=PAPER_COLORS["dark"], linewidth=0.45)
     ax.set_xticks(x_base)
     ax.set_xticklabels([clean_label(x) for x in keep], rotation=35, ha="right")
     ax.set_ylabel("Held-out Pearson")
@@ -213,12 +225,11 @@ def fig3e_metric_summary() -> None:
         ("high_to_low_barrier_ratio_mean", "high_to_low_barrier_ratio_sd", "Leakage ratio", True),
     ]
     x = np.arange(len(keep))
-    width = 0.36
-    colors = {"20/80": "#E15759", "80/20": "#59A14F"}
+    width = 0.28
     for ax, (mean_col, sd_col, title, lower) in zip(axes, metrics):
         for i, split in enumerate(["80/20", "20/80"]):
             sub = df[df["split"] == split].set_index("method").reindex(keep)
-            ax.bar(x + (i - 0.5) * width, sub[mean_col], yerr=sub[sd_col], width=width, color=colors[split], edgecolor="#222222", linewidth=0.45, label=f"train/test {split}")
+            ax.bar(x + (i - 0.5) * width, sub[mean_col], yerr=sub[sd_col], width=width, color=SPLIT_COLORS[split], edgecolor=PAPER_COLORS["dark"], linewidth=0.42, label=f"train/test {split}")
         ax.set_xticks(x)
         ax.set_xticklabels([clean_label(m) for m in keep], rotation=45, ha="right", fontsize=6.0)
         ax.set_title(title)
@@ -240,13 +251,17 @@ def fig3f_paired_ablation() -> None:
             rows.append({"split": label, "metric": metric_label, "delta": row["paired_difference_mean"], "sd": row["paired_difference_sd"]})
     out = pd.DataFrame(rows)
     x = np.arange(len(order))
-    width = 0.36
     fig, ax = plt.subplots(figsize=(3.4, 2.45))
     panel_label(ax, "F", x=-0.18, y=1.10)
-    for i, split in enumerate(["20/80", "80/20"]):
+    offsets = {"20/80": -0.12, "80/20": 0.12}
+    for split in ["20/80", "80/20"]:
         sub = out[out["split"] == split].set_index("metric").reindex([label for _, label in order])
-        ax.bar(x + (i - 0.5) * width, sub["delta"], yerr=sub["sd"], width=width, label=f"train/test {split}", color={"20/80": "#E15759", "80/20": "#59A14F"}[split], edgecolor="#222222", linewidth=0.5)
-    ax.axhline(0, color="#222222", linewidth=0.7)
+        xpos = x + offsets[split]
+        color = SPLIT_COLORS[split]
+        for xp, val, sd in zip(xpos, sub["delta"], sub["sd"]):
+            ax.plot([xp, xp], [0, val], color=color, linewidth=1.0, alpha=0.90, zorder=2)
+            ax.errorbar(xp, val, yerr=sd, fmt="o", markersize=4.2, color=color, markeredgecolor=PAPER_COLORS["dark"], markeredgewidth=0.45, elinewidth=0.75, capsize=2.0, label=f"train/test {split}" if xp == xpos[0] else None, zorder=3)
+    ax.axhline(0, color=PAPER_COLORS["dark"], linewidth=0.7)
     ax.set_xticks(x)
     ax.set_xticklabels([label for _, label in order])
     ax.set_ylabel("Barrier - no barrier")
@@ -267,9 +282,14 @@ def fig3g_attenuation_index() -> None:
     out = pd.DataFrame(rows)
     fig, ax = plt.subplots(figsize=(2.7, 2.35))
     panel_label(ax, "G", x=-0.20, y=1.10)
-    ax.bar(np.arange(len(out)), out["attenuation"], color=["#E15759", "#59A14F"], edgecolor="#222222", linewidth=0.5)
+    x = np.arange(len(out))
+    for i, (split, val) in enumerate(zip(out["split"], out["attenuation"])):
+        color = SPLIT_COLORS[split]
+        ax.plot([i, i], [0, val], color=color, linewidth=1.35, alpha=0.92, zorder=2)
+        ax.scatter(i, val, s=42, color=color, edgecolor=PAPER_COLORS["dark"], linewidth=0.45, zorder=3)
     ax.set_xticks(np.arange(len(out)))
     ax.set_xticklabels([f"train/test\n{x}" for x in out["split"]])
+    ax.set_xlim(-0.35, len(out) - 0.65)
     ax.set_ylim(0, 0.75)
     ax.set_ylabel("Barrier attenuation index")
     ax.set_title("Leakage reduction")

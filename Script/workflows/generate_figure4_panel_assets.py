@@ -11,6 +11,7 @@ import numpy as np
 import pandas as pd
 from matplotlib import gridspec
 from PIL import Image
+from scipy.ndimage import gaussian_filter
 
 
 PROJECT_ROOT = Path(os.environ.get("ANISONET_PROJECT_ROOT", Path(__file__).resolve().parents[2]))
@@ -42,15 +43,26 @@ LOWPDE_REP_ROOT = (
 )
 
 
+PAPER_COLORS = {
+    "teal": "#4C9A91",
+    "blue": "#5E81AC",
+    "terracotta": "#C36F5B",
+    "lavender": "#8C7BB7",
+    "ochre": "#C7A35A",
+    "sage": "#7BA05B",
+    "slate": "#7E8796",
+    "dark": "#2F3A45",
+}
+
 COLORS = {
-    "Apoe": "#3f7f93",
-    "Gfap": "#b35f5f",
-    "brightness": "#4f7cac",
-    "hematoxylin": "#9b6a9e",
-    "masked": "#6a994e",
-    "gauss07": "#c58c2b",
-    "default": "#7d8597",
-    "low_pde": "#2a9d8f",
+    "Apoe": PAPER_COLORS["teal"],
+    "Gfap": PAPER_COLORS["terracotta"],
+    "brightness": PAPER_COLORS["blue"],
+    "hematoxylin": PAPER_COLORS["lavender"],
+    "masked": PAPER_COLORS["sage"],
+    "gauss07": PAPER_COLORS["ochre"],
+    "default": PAPER_COLORS["slate"],
+    "low_pde": PAPER_COLORS["teal"],
 }
 
 
@@ -123,6 +135,18 @@ def normalized_panel(arr: np.ndarray, mask: np.ndarray | None = None, *, log: bo
     return out
 
 
+def smooth_masked_display(panel: np.ndarray, mask: np.ndarray, sigma: float) -> np.ndarray:
+    valid = mask & np.isfinite(panel)
+    if not np.any(valid):
+        return panel
+    values = np.where(valid, panel, 0.0)
+    weights = valid.astype(float)
+    smooth = gaussian_filter(values, sigma=sigma, mode="nearest")
+    norm = gaussian_filter(weights, sigma=sigma, mode="nearest")
+    out = smooth / np.maximum(norm, 1e-6)
+    return np.where(mask, out, np.nan)
+
+
 def gradient_magnitude(arr: np.ndarray, mask: np.ndarray) -> np.ndarray:
     gy, gx = np.gradient(np.where(mask, arr, np.nan))
     grad = np.sqrt(gx * gx + gy * gy)
@@ -138,6 +162,7 @@ def show_grid(
     *,
     log: bool = False,
     diverging: bool = False,
+    display_smooth_sigma: float | None = None,
 ) -> None:
     if diverging:
         data = np.where(mask, arr, np.nan)
@@ -148,8 +173,12 @@ def show_grid(
         panel = crop_to_mask(data, mask)
         ax.imshow(panel, cmap=cmap, interpolation="bilinear", origin="lower", vmin=-limit, vmax=limit)
     else:
-        panel = crop_to_mask(normalized_panel(arr, mask, log=log), mask)
-        ax.imshow(panel, cmap=cmap, interpolation="bilinear", origin="lower")
+        data = normalized_panel(arr, mask, log=log)
+        if display_smooth_sigma is not None and display_smooth_sigma > 0:
+            data = smooth_masked_display(data, mask, display_smooth_sigma)
+        panel = crop_to_mask(data, mask)
+        interpolation = "bicubic" if display_smooth_sigma is not None and display_smooth_sigma > 0 else "bilinear"
+        ax.imshow(panel, cmap=cmap, interpolation=interpolation, origin="lower")
     ax.set_title(title, fontsize=7.1, pad=2)
     ax.set_xticks([])
     ax.set_yticks([])
@@ -229,8 +258,8 @@ def compact_slope_axis(
     right_label: str,
     ylabel: str,
     *,
-    color_left: str = "#4f7cac",
-    color_right: str = "#9b6a9e",
+    color_left: str = PAPER_COLORS["blue"],
+    color_right: str = PAPER_COLORS["lavender"],
 ) -> None:
     y = np.arange(len(labels))[::-1]
     for yi, lv, rv in zip(y, left_values, right_values):
@@ -261,6 +290,38 @@ def show_he_with_spots(ax: plt.Axes, sample: str, coords_norm: np.ndarray, title
         spine.set_visible(False)
 
 
+def show_spot_field(
+    ax: plt.Axes,
+    sample: str,
+    coords_norm: np.ndarray,
+    arr: np.ndarray,
+    mask: np.ndarray,
+    title: str,
+    cmap: str,
+    *,
+    log: bool = False,
+) -> None:
+    image_path = SPATIAL_ROOT / sample / "spatial" / "tissue_hires_image.png"
+    image = Image.open(image_path).convert("L")
+    image.thumbnail((900, 900), Image.Resampling.LANCZOS)
+    gray = np.asarray(image)
+    ax.imshow(gray, cmap="gray", alpha=0.34)
+    h, w = gray.shape[:2]
+    x = np.clip(coords_norm[:, 0], 0, 1) * w
+    y = (1 - np.clip(coords_norm[:, 1], 0, 1)) * h
+    panel = normalized_panel(arr, mask, log=log)
+    gx = np.clip(np.rint(coords_norm[:, 0] * (arr.shape[1] - 1)).astype(int), 0, arr.shape[1] - 1)
+    gy = np.clip(np.rint(coords_norm[:, 1] * (arr.shape[0] - 1)).astype(int), 0, arr.shape[0] - 1)
+    vals = panel[gy, gx]
+    valid = np.isfinite(vals)
+    ax.scatter(x[valid], y[valid], s=6.8, c=vals[valid], cmap=cmap, vmin=0, vmax=1, edgecolor="none", alpha=0.92)
+    ax.set_title(title, fontsize=7.1, pad=2)
+    ax.set_xticks([])
+    ax.set_yticks([])
+    for spine in ax.spines.values():
+        spine.set_visible(False)
+
+
 def fig4a_spatial_prior_comparison() -> None:
     bright = HISTO_REP_ROOT / "brightness"
     hema = HISTO_REP_ROOT / "hematoxylin"
@@ -279,8 +340,8 @@ def fig4a_spatial_prior_comparison() -> None:
     axes = [fig.add_subplot(gs[i // 4, i % 4]) for i in range(8)]
     panel_label(axes[0], "A", x=-0.18, y=1.12)
     show_he_with_spots(axes[0], HISTO_REP_SAMPLE, coords, "H&E + spots")
-    show_grid(axes[1], source, mask, "Apoe source", "magma")
-    show_grid(axes[2], barrier, mask, "CNS-myelin barrier", "YlOrBr")
+    show_spot_field(axes[1], HISTO_REP_SAMPLE, coords, source, mask, "Apoe source", "magma")
+    show_spot_field(axes[2], HISTO_REP_SAMPLE, coords, barrier, mask, "CNS-myelin barrier", "YlOrBr")
     show_grid(axes[3], bright_res, mask, "Brightness\nstructural prior", "viridis")
     show_grid(axes[4], hema_res, mask, "Hematoxylin\nstructural prior", "viridis")
     show_grid(axes[5], bright_field, mask, "Brightness-prior\nfield", "plasma")
@@ -293,6 +354,7 @@ def fig4a_spatial_prior_comparison() -> None:
 def fig4b_spatial_profile_sensitivity() -> None:
     preflight = PREFLIGHT_ROOT / LOWPDE_REP_SAMPLE / LOWPDE_REP_TASK
     mask = np.load(preflight / "tissue_mask.npy") > 0
+    coords = np.load(preflight / "coords_norm.npy")
     source = np.load(preflight / "source_grid.npy")
     barrier = np.load(preflight / "barrier_grid.npy")
     default = np.load(LOWPDE_REP_ROOT / "seed0" / "default" / "field_gauss07.npy")
@@ -304,8 +366,8 @@ def fig4b_spatial_profile_sensitivity() -> None:
     gs = gridspec.GridSpec(1, 6, figure=fig, wspace=0.08)
     axes = [fig.add_subplot(gs[0, i]) for i in range(6)]
     panel_label(axes[0], "B", x=-0.20, y=1.11)
-    show_grid(axes[0], source, mask, "Apoe source", "magma")
-    show_grid(axes[1], barrier, mask, "CNS-myelin\nbarrier", "YlOrBr")
+    show_spot_field(axes[0], LOWPDE_REP_SAMPLE, coords, source, mask, "Apoe source", "magma")
+    show_spot_field(axes[1], LOWPDE_REP_SAMPLE, coords, barrier, mask, "CNS-myelin\nbarrier", "YlOrBr")
     show_grid(axes[2], default, mask, "Default\nfield", "plasma")
     show_grid(axes[3], low_pde, mask, "Low-PDE\nfield", "plasma")
     show_grid(axes[4], delta, mask, "Low-PDE -\ndefault", "coolwarm", diverging=True)
@@ -357,8 +419,8 @@ def fig4c_histology_prior() -> None:
     ax_p.set_title("Source fidelity", fontsize=7.5)
     ax_r.set_title("Roughness", fontsize=7.5)
     handles = [
-        mpl.lines.Line2D([0], [0], marker="o", linestyle="none", markerfacecolor="#4f7cac", markeredgecolor="#333333", markersize=4.5),
-        mpl.lines.Line2D([0], [0], marker="o", linestyle="none", markerfacecolor="#9b6a9e", markeredgecolor="#333333", markersize=4.5),
+        mpl.lines.Line2D([0], [0], marker="o", linestyle="none", markerfacecolor=PAPER_COLORS["blue"], markeredgecolor=PAPER_COLORS["dark"], markersize=4.5),
+        mpl.lines.Line2D([0], [0], marker="o", linestyle="none", markerfacecolor=PAPER_COLORS["lavender"], markeredgecolor=PAPER_COLORS["dark"], markersize=4.5),
     ]
     fig.legend(handles, ["Brightness", "Hematoxylin"], frameon=False, ncol=2, fontsize=6.4, loc="upper center", bbox_to_anchor=(0.71, 0.93))
     fig.suptitle("Histology-prior robustness: spatial fields first, compact metrics second", fontsize=8.8, fontweight="bold", y=1.04)
@@ -403,7 +465,7 @@ def fig4b_low_pde_profile() -> None:
     )
 
     y = np.arange(len(delta))[::-1]
-    colors = ["#2a9d8f" if v >= 0 else "#b56576" for v in delta["spot_pearson_source_mean"]]
+    colors = [PAPER_COLORS["teal"] if v >= 0 else PAPER_COLORS["terracotta"] for v in delta["spot_pearson_source_mean"]]
     ax_metric.axvline(0, color="#333333", linewidth=0.55)
     for yi, value, color in zip(y, delta["spot_pearson_source_mean"], colors):
         ax_metric.plot([0, value], [yi, yi], color=color, linewidth=1.0)
@@ -416,8 +478,8 @@ def fig4b_low_pde_profile() -> None:
 
     ax_trade.axvline(0, color="#333333", linewidth=0.55)
     for yi, mse, rough in zip(y, delta["spot_mse_source_mean"], delta["roughness_grad_p95_mean"]):
-        ax_trade.scatter(mse, yi + 0.12, s=22, color="#7d8597", edgecolor="#333333", linewidth=0.30, label="Delta MSE" if yi == y[0] else None)
-        ax_trade.scatter(rough, yi - 0.12, s=22, color="#c58c2b", edgecolor="#333333", linewidth=0.30, label="Delta rough" if yi == y[0] else None)
+        ax_trade.scatter(mse, yi + 0.12, s=22, color=PAPER_COLORS["slate"], edgecolor=PAPER_COLORS["dark"], linewidth=0.30, label="Delta MSE" if yi == y[0] else None)
+        ax_trade.scatter(rough, yi - 0.12, s=22, color=PAPER_COLORS["ochre"], edgecolor=PAPER_COLORS["dark"], linewidth=0.30, label="Delta rough" if yi == y[0] else None)
     ax_trade.set_yticks(y)
     ax_trade.set_yticklabels([])
     ax_trade.set_xlabel("Delta value", fontsize=6.7)
@@ -474,8 +536,8 @@ def fig4d_seed_stability() -> None:
         show_grid(ax, delta_map, mask, f"Seed {seed}\nlow-PDE - default", "coolwarm", diverging=True)
     y = np.arange(len(df))[::-1]
     for yi, mean, sd in zip(y, df["source_pearson_delta_mean"], df["source_pearson_delta_sd"]):
-        ax_p.plot([mean - sd, mean + sd], [yi, yi], color="#2a9d8f", linewidth=1.2)
-        ax_p.scatter(mean, yi, s=26, color="#2a9d8f", edgecolor="#333333", linewidth=0.35)
+        ax_p.plot([mean - sd, mean + sd], [yi, yi], color=PAPER_COLORS["teal"], linewidth=1.2)
+        ax_p.scatter(mean, yi, s=26, color=PAPER_COLORS["teal"], edgecolor=PAPER_COLORS["dark"], linewidth=0.35)
     ax_p.axvline(0, color="#333333", linewidth=0.55)
     ax_p.set_yticks(y)
     ax_p.set_yticklabels(df["label"], fontsize=6.3)
@@ -483,8 +545,8 @@ def fig4d_seed_stability() -> None:
     ax_p.set_title("Seed-paired gain", fontsize=7.5)
     ax_p.grid(axis="x", color="#dddddd", linewidth=0.45, alpha=0.75)
     for yi, mean, sd in zip(y, df["roughness_p95_delta_mean"], df["roughness_p95_delta_sd"]):
-        ax_r.plot([mean - sd, mean + sd], [yi, yi], color="#c58c2b", linewidth=1.2)
-        ax_r.scatter(mean, yi, s=26, color="#c58c2b", edgecolor="#333333", linewidth=0.35)
+        ax_r.plot([mean - sd, mean + sd], [yi, yi], color=PAPER_COLORS["ochre"], linewidth=1.2)
+        ax_r.scatter(mean, yi, s=26, color=PAPER_COLORS["ochre"], edgecolor=PAPER_COLORS["dark"], linewidth=0.35)
     ax_r.axvline(0, color="#333333", linewidth=0.55)
     ax_r.set_yticks(y)
     ax_r.set_yticklabels([])
@@ -513,17 +575,20 @@ def fig4e_resource_profile() -> None:
     ax_mem = fig.add_subplot(gs[0, 4])
     panel_label(ax_he, "G", x=-0.22, y=1.10)
     show_he_with_spots(ax_he, HISTO_REP_SAMPLE, coords, "Profiled\nsection")
-    show_grid(ax_source, source, mask, "Apoe source\nfield object", "magma")
+    show_spot_field(ax_source, HISTO_REP_SAMPLE, coords, source, mask, "Apoe source\nfield object", "magma")
     show_surface(ax_surface, source, mask, "3D source\nheight")
 
-    colors = ["#7d8597", "#2a9d8f"]
+    colors = [PAPER_COLORS["slate"], PAPER_COLORS["teal"]]
     for ax, metric, title, xlabel in [
         (ax_time, "mean_elapsed_seconds", "Runtime", "Seconds"),
         (ax_mem, "mean_peak_cuda_reserved_gb", "Memory", "CUDA GB"),
     ]:
         y = np.arange(len(df))[::-1]
         vals = df[metric].to_numpy()
-        ax.barh(y, vals, height=0.36, color=colors, edgecolor="#333333", linewidth=0.35)
+        for yi, val, color in zip(y, vals, colors):
+            ax.plot([0, val], [yi, yi], color=color, linewidth=1.25, alpha=0.95, zorder=2)
+            ax.scatter(val, yi, s=34, color=color, edgecolor=PAPER_COLORS["dark"], linewidth=0.36, zorder=3)
+        ax.set_xlim(0, max(vals) * 1.08)
         ax.set_yticks(y)
         ax.set_yticklabels(labels, fontsize=6.2)
         ax.set_xlabel(xlabel, fontsize=6.7)
@@ -562,7 +627,6 @@ def fig4f_profile_decision() -> None:
             cell.set_text_props(weight="bold")
         elif row % 2 == 0:
             cell.set_facecolor("#f8f9fa")
-    ax.text(-0.04, 1.05, "H", transform=ax.transAxes, fontsize=12, fontweight="bold", ha="left", va="top")
     ax.set_title("Recommended robustness narrative", fontsize=8.6, loc="left", pad=10)
     save_panel(fig, "Fig4H_profile_decision_table")
 

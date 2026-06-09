@@ -1,6 +1,6 @@
 # Main Figure Provenance For GPB Revision
 
-Date: 2026-06-08
+Date: 2026-06-09
 
 Purpose:
 
@@ -29,11 +29,11 @@ Primary inputs:
 - `codexAnalysis/preflight/brain_aging_gse193107/GSM5773457_Old_mouse_brain_A1-2/Apoe_CNS_Myelin`
 - `codexAnalysis/pinn/brain_aging_gse193107/GSM5773457_Old_mouse_brain_A1-2/Apoe_CNS_Myelin/fourier_refined_16g_gauss07_batch`
 - `codexAnalysis/processed_visium/brain_aging_gse193107/GSM5773457_Old_mouse_brain_A1-2/spatial`
-- `codexAnalysis/manuscript_figures/Figure1_method_overview/source_assets/Fig1D_barrier_constrained_schematic_v2.png`
+- `codexAnalysis/manuscript_figures/Figure1_method_overview/source_assets/Fig1D_continuous_resistance_field_schematic_v4.png`
 
 Evidence role:
 
-- Define the biological task, scalar model implementation, barrier mechanism, and representative output.
+- Define the biological task, scalar model implementation, continuous resistance mechanism, and representative output.
 - Prevent overclaiming by explicitly describing the current implementation as scalar rather than tensor-valued or divergence-form.
 - Panel letters are intentionally not embedded in generated panel assets; add final A-E labels manually during vector assembly.
 
@@ -96,6 +96,7 @@ Evidence role:
 
 - Separate generic held-out interpolation from controlled barrier-leakage validation.
 - Synthetic panels provide the clearest mechanism evidence because source, barrier, and ground truth are controlled.
+- Summary panels use the revised muted manuscript palette, with Figures 3F and 3G shown as compact point/lollipop summaries rather than wide bars.
 
 ## Figure 4: Robustness, Sensitivity, And Computational Profile
 
@@ -128,6 +129,8 @@ Primary inputs:
 Evidence role:
 
 - Show sensitivity to histology priors, loss-weight profiles, source clipping, seed, and compute resources.
+- Figures 4A and 4B show source/barrier inputs as spot-level overlays to avoid misreading rasterized Visium grid artifacts as tissue texture.
+- Figure 4G uses compact lollipop summaries for runtime and memory rather than wide horizontal bars.
 - Frame low-PDE as a source-fit-optimized sensitivity profile rather than a universal replacement for the conservative default.
 
 ## Figure 5: Cross-Tissue Portability And Claim Boundary

@@ -29,15 +29,25 @@ KIDNEY_MAIN = ROOT / "barrier_split_anisonet" / "mouse_kidney_10x" / "V1_Mouse_K
 KIDNEY_MARKER = ROOT / "barrier_split_anisonet" / "mouse_kidney_10x" / "V1_Mouse_Kidney" / "evidence_boundary_diagnostics" / "kidney_marker_screen_evidence_boundary.csv"
 MARKER_RANK = ROOT / "cross_tissue" / "mouse_kidney_10x" / "V1_Mouse_Kidney" / "marker_task_screen" / "kidney_marker_task_screen_top_recommendations.csv"
 
+PAPER_COLORS = {
+    "teal": "#4C9A91",
+    "blue": "#5E81AC",
+    "terracotta": "#C36F5B",
+    "lavender": "#8C7BB7",
+    "ochre": "#C7A35A",
+    "sage": "#7BA05B",
+    "slate": "#7E8796",
+    "dark": "#2F3A45",
+}
 
 ROLE_COLORS = {
-    "method-development": "#2a9d8f",
-    "supplementary": "#89a955",
-    "supplementary positive-leaning": "#78a661",
-    "supplementary mixed": "#c9a646",
-    "method diagnostic": "#7d8597",
-    "claim-boundary": "#b56576",
-    "claim-boundary / negative control": "#8d99ae",
+    "method-development": PAPER_COLORS["teal"],
+    "supplementary": PAPER_COLORS["sage"],
+    "supplementary positive-leaning": PAPER_COLORS["sage"],
+    "supplementary mixed": PAPER_COLORS["ochre"],
+    "method diagnostic": PAPER_COLORS["slate"],
+    "claim-boundary": PAPER_COLORS["terracotta"],
+    "claim-boundary / negative control": PAPER_COLORS["slate"],
 }
 
 
@@ -334,7 +344,7 @@ def fig5b_kidney_main_boundary() -> None:
     df = pd.read_csv(KIDNEY_MAIN)
     methods = ["resistance_idw_pearson", "line_prior_pearson", "grid_geodesic_pearson", "best_hybrid_pearson"]
     labels = ["Resistance IDW", "Line prior", "Grid geodesic", "Best hybrid"]
-    colors = ["#7d8597", "#89a955", "#c9a646", "#2a9d8f"]
+    colors = [PAPER_COLORS["slate"], PAPER_COLORS["sage"], PAPER_COLORS["ochre"], PAPER_COLORS["teal"]]
     spatial = load_spatial_dataset(KIDNEY_PROCESSED, ["Slc34a1", "Umod", "Slc12a3", "Slc12a1"])
     fig = plt.figure(figsize=(8.4, 2.75))
     gs = fig.add_gridspec(1, 5, width_ratios=[1, 1, 1, 1.55, 1.55], wspace=0.28)
@@ -400,8 +410,8 @@ def fig5c_kidney_marker_followup() -> None:
     y = np.arange(len(df))[::-1]
     ax_score.axvline(0, color="#333333", linewidth=0.55)
     for yi, value in zip(y, df["task_score"]):
-        ax_score.plot([0, value], [yi, yi], color="#89a955", linewidth=1.0)
-        ax_score.scatter(value, yi, s=28, color="#89a955", edgecolor="#333333", linewidth=0.35)
+        ax_score.plot([0, value], [yi, yi], color=PAPER_COLORS["sage"], linewidth=1.0)
+        ax_score.scatter(value, yi, s=28, color=PAPER_COLORS["sage"], edgecolor=PAPER_COLORS["dark"], linewidth=0.35)
     ax_score.set_yticks(y)
     ax_score.set_yticklabels(df["short_task"], fontsize=6.0)
     ax_score.set_xlabel("Screen task score", fontsize=6.6)
@@ -409,9 +419,9 @@ def fig5c_kidney_marker_followup() -> None:
     ax_score.grid(axis="x", color="#dddddd", linewidth=0.45, alpha=0.75)
     ax_delta.axvline(0, color="#333333", linewidth=0.55)
     for yi, value in zip(y, df["high_barrier_idw_pearson_delta"]):
-        color = "#2a9d8f" if value >= 0 else "#b56576"
+        color = PAPER_COLORS["teal"] if value >= 0 else PAPER_COLORS["terracotta"]
         ax_delta.plot([0, value], [yi, yi], color=color, linewidth=1.0)
-        ax_delta.scatter(value, yi, s=28, color=color, edgecolor="#333333", linewidth=0.35)
+        ax_delta.scatter(value, yi, s=28, color=color, edgecolor=PAPER_COLORS["dark"], linewidth=0.35)
     ax_delta.set_yticks(y)
     ax_delta.set_yticklabels([])
     ax_delta.set_xlabel("Pearson delta", fontsize=6.6)
@@ -425,11 +435,11 @@ def fig5d_liver_annotation_boundary() -> None:
     df = pd.read_csv(EVIDENCE)
     liver = df[df["dataset"].str.contains("liver", case=False, na=False)].copy()
     liver = liver.sort_values("candidate_value")
-    colors = ["#b56576" if v < 0 else "#2a9d8f" for v in liver["candidate_value"]]
+    colors = [PAPER_COLORS["terracotta"] if v < 0 else PAPER_COLORS["teal"] for v in liver["candidate_value"]]
     fig, ax = plt.subplots(figsize=(6.8, 2.75))
     x = np.arange(len(liver))
     ax.axhline(0, color="#333333", linewidth=0.55)
-    ax.bar(x, liver["candidate_value"], color=colors, edgecolor="#333333", linewidth=0.45)
+    ax.bar(x, liver["candidate_value"], color=colors, edgecolor=PAPER_COLORS["dark"], linewidth=0.42, width=0.55)
     ax.set_xticks(x)
     ax.set_xticklabels(liver["task_or_target"])
     ax.set_ylabel("Pearson delta")
@@ -446,7 +456,7 @@ def fig5e_sagittal_negative_control() -> None:
     fig, ax = plt.subplots(figsize=(7.3, 2.75))
     x = np.arange(len(brain))
     ax.axhline(0, color="#333333", linewidth=0.55)
-    ax.bar(x, brain["candidate_value"], color="#8d99ae", edgecolor="#333333", linewidth=0.45)
+    ax.bar(x, brain["candidate_value"], color=PAPER_COLORS["slate"], edgecolor=PAPER_COLORS["dark"], linewidth=0.42, width=0.55)
     ax.set_xticks(x)
     ax.set_xticklabels(brain["short_task"], rotation=20, ha="right")
     ax.set_ylabel("Pearson delta")
@@ -470,11 +480,11 @@ def fig5f_transfer_delta_summary() -> None:
         role = str(row["summary_role"])
         val = float(row["candidate_value"])
         if "negative" in role:
-            colors.append("#8d99ae")
+            colors.append(PAPER_COLORS["slate"])
         elif val >= 0:
-            colors.append("#2a9d8f")
+            colors.append(PAPER_COLORS["teal"])
         else:
-            colors.append("#b56576")
+            colors.append(PAPER_COLORS["terracotta"])
 
     fig, ax = plt.subplots(figsize=(8.2, 3.4))
     ax.axvline(0, color="#333333", linewidth=0.65)
@@ -539,8 +549,8 @@ def fig5g_marker_rank_context() -> None:
     rank["task"] = rank["target_gene"] + "-" + rank["barrier_compartment"]
     fig, ax = plt.subplots(figsize=(7.6, 3.0))
     y = np.arange(len(rank))[::-1]
-    colors = ["#2a9d8f" if bool(x) else "#7d8597" for x in rank["recommended"]]
-    ax.barh(y, rank["task_score"], color=colors, edgecolor="#333333", linewidth=0.45)
+    colors = [PAPER_COLORS["teal"] if bool(x) else PAPER_COLORS["slate"] for x in rank["recommended"]]
+    ax.barh(y, rank["task_score"], height=0.48, color=colors, edgecolor=PAPER_COLORS["dark"], linewidth=0.42)
     ax.set_yticks(y)
     ax.set_yticklabels(rank["task"], fontsize=6.8)
     ax.set_xlabel("Task score")
