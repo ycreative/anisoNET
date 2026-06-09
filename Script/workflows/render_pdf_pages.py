@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import os
+
 import argparse
 import sys
 from pathlib import Path
@@ -9,7 +11,7 @@ from pathlib import Path
 from PIL import Image, ImageDraw
 
 
-PROJECT_ROOT = Path(r"K:\YC\experiment\STagent")
+PROJECT_ROOT = Path(os.environ.get("ANISONET_PROJECT_ROOT", Path(__file__).resolve().parents[2]))
 VENDOR_DIR = PROJECT_ROOT / "codexAnalysis" / "pdf_review" / "vendor"
 if VENDOR_DIR.exists():
     sys.path.insert(0, str(VENDOR_DIR))
@@ -95,3 +97,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+

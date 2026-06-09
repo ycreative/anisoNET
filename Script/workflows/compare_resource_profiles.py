@@ -2,13 +2,15 @@
 
 from __future__ import annotations
 
+import os
+
 import argparse
 from pathlib import Path
 
 import pandas as pd
 
 
-PROJECT_ROOT = Path(r"K:\YC\experiment\STagent")
+PROJECT_ROOT = Path(os.environ.get("ANISONET_PROJECT_ROOT", Path(__file__).resolve().parents[2]))
 RESOURCE_ROOT = PROJECT_ROOT / "codexAnalysis" / "resource_profile" / "brain_aging_gse193107"
 
 
@@ -89,3 +91,4 @@ def write_markdown(comparison: pd.DataFrame, path: Path) -> None:
 
 if __name__ == "__main__":
     main()
+

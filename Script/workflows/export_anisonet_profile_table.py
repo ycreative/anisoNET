@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import os
+
 import argparse
 import csv
 import sys
@@ -9,7 +11,7 @@ from dataclasses import asdict
 from pathlib import Path
 
 
-PROJECT_ROOT = Path(r"K:\YC\experiment\STagent")
+PROJECT_ROOT = Path(os.environ.get("ANISONET_PROJECT_ROOT", Path(__file__).resolve().parents[2]))
 SCRIPT_ROOT = PROJECT_ROOT / "Script"
 if str(SCRIPT_ROOT) not in sys.path:
     sys.path.insert(0, str(SCRIPT_ROOT))
@@ -130,3 +132,4 @@ def write_markdown(rows: list[dict[str, object]], path: Path) -> None:
 
 if __name__ == "__main__":
     main()
+

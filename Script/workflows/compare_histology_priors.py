@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import os
+
 import argparse
 import csv
 from pathlib import Path
@@ -9,7 +11,7 @@ from pathlib import Path
 import numpy as np
 
 
-PROJECT_ROOT = Path(r"K:\YC\experiment\STagent")
+PROJECT_ROOT = Path(os.environ.get("ANISONET_PROJECT_ROOT", Path(__file__).resolve().parents[2]))
 DEFAULT_ROOT = PROJECT_ROOT / "codexAnalysis" / "histology_prior" / "brain_aging_gse193107"
 
 
@@ -114,3 +116,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+

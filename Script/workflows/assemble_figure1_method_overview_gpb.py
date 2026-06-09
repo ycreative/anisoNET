@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import os
+
 from pathlib import Path
 
 import matplotlib as mpl
@@ -11,7 +13,7 @@ from matplotlib.patches import FancyArrowPatch, Rectangle
 from PIL import Image
 
 
-PROJECT_ROOT = Path(r"K:\YC\experiment\STagent")
+PROJECT_ROOT = Path(os.environ.get("ANISONET_PROJECT_ROOT", Path(__file__).resolve().parents[2]))
 SAMPLE = "GSM5773457_Old_mouse_brain_A1-2"
 TASK = "Apoe_CNS_Myelin"
 PRELIGHT_DIR = PROJECT_ROOT / "codexAnalysis" / "preflight" / "brain_aging_gse193107" / SAMPLE / TASK
@@ -264,3 +266,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+

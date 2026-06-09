@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import os
+
 import argparse
 import csv
 import json
@@ -17,7 +19,7 @@ from anisonet.preprocessing import clip_and_normalize
 from anisonet.visium_io import load_visium_lite, normalized_gene_vector
 
 
-PROJECT_ROOT = Path(r"K:\YC\experiment\STagent")
+PROJECT_ROOT = Path(os.environ.get("ANISONET_PROJECT_ROOT", Path(__file__).resolve().parents[2]))
 PROCESSED_ROOT = PROJECT_ROOT / "codexAnalysis" / "processed_visium" / "brain_aging_gse193107"
 PREFLIGHT_ROOT = PROJECT_ROOT / "codexAnalysis" / "preflight" / "brain_aging_gse193107"
 OUTPUT_ROOT = PROJECT_ROOT / "codexAnalysis" / "barrier_perturbation" / "brain_aging_gse193107"
@@ -158,3 +160,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+

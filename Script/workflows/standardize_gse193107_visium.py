@@ -1,6 +1,6 @@
 """Standardize GSE193107 mouse brain Visium archives for anisoNET.
 
-Raw archives in ``dataset/分析数据集/GSE193107_RAW`` contain Space Ranger-like
+Raw archives in a user-provided GSE193107 download directory contain Space Ranger-like
 files nested under sample-specific prefixes. This script extracts one or more
 samples into a consistent Visium directory layout under ``codexAnalysis``:
 
@@ -16,6 +16,8 @@ sample/
 
 from __future__ import annotations
 
+import os
+
 import argparse
 import gzip
 import json
@@ -25,8 +27,8 @@ from pathlib import Path
 from typing import Iterable
 
 
-PROJECT_ROOT = Path(r"K:\YC\experiment\STagent")
-RAW_DIR = PROJECT_ROOT / "dataset" / "分析数据集" / "GSE193107_RAW"
+PROJECT_ROOT = Path(os.environ.get("ANISONET_PROJECT_ROOT", Path(__file__).resolve().parents[2]))
+RAW_DIR = Path(os.environ.get("ANISONET_GSE193107_RAW_DIR", PROJECT_ROOT / "dataset" / "GSE193107_RAW"))
 OUTPUT_ROOT = PROJECT_ROOT / "codexAnalysis" / "processed_visium" / "brain_aging_gse193107"
 
 SPACE_FILES = {
@@ -167,3 +169,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+

@@ -2,15 +2,18 @@
 
 from __future__ import annotations
 
+import os
+
 import argparse
 import csv
 import json
 import subprocess
+import sys
 from pathlib import Path
 
 
-PROJECT_ROOT = Path(r"K:\YC\experiment\STagent")
-PYTHON = Path(r"K:\software\miniconda\envs\scvi_env\python.exe")
+PROJECT_ROOT = Path(os.environ.get("ANISONET_PROJECT_ROOT", Path(__file__).resolve().parents[2]))
+PYTHON = Path(os.environ.get("ANISONET_PYTHON", sys.executable))
 PROCESSED_ROOT = PROJECT_ROOT / "codexAnalysis" / "processed_visium" / "brain_aging_gse193107"
 OUTPUT_ROOT = PROJECT_ROOT / "codexAnalysis" / "histology_prior" / "brain_aging_gse193107"
 
@@ -108,3 +111,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+

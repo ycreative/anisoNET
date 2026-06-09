@@ -2,13 +2,15 @@
 
 from __future__ import annotations
 
+import os
+
 import argparse
 from pathlib import Path
 
 import pandas as pd
 
 
-PROJECT_ROOT = Path(r"K:\YC\experiment\STagent")
+PROJECT_ROOT = Path(os.environ.get("ANISONET_PROJECT_ROOT", Path(__file__).resolve().parents[2]))
 OUTPUT_ROOT = PROJECT_ROOT / "codexAnalysis" / "resource_profile" / "brain_aging_gse193107"
 
 
@@ -96,3 +98,4 @@ def write_table(frame: pd.DataFrame, output_dir: Path, *, suffix: str = "") -> N
 
 if __name__ == "__main__":
     main()
+

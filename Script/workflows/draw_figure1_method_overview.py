@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+import os
+
 from pathlib import Path
 
 
-PROJECT_ROOT = Path(r"K:\YC\experiment\STagent")
+PROJECT_ROOT = Path(os.environ.get("ANISONET_PROJECT_ROOT", Path(__file__).resolve().parents[2]))
 OUTPUT_DIR = PROJECT_ROOT / "codexAnalysis" / "manuscript_figures" / "drafts"
 
 
@@ -212,3 +214,4 @@ def draw_spot_grid(ax, x, y, w, h):
 
 if __name__ == "__main__":
     main()
+

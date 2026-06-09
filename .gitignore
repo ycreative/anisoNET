@@ -1,0 +1,40 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+
+# Local data and generated analysis outputs
+dataset/
+codexAnalysis/processed_visium/
+codexAnalysis/preflight/
+codexAnalysis/pinn/
+codexAnalysis/sweeps/
+codexAnalysis/workflow_tests/
+codexAnalysis/pdf_review/renders/
+codexAnalysis/manuscript_docx_working/
+codexAnalysis/manuscript_qc/
+
+# Manuscript working files and office temp files
+draft/**/*.docx
+draft/**/*.xlsx
+~$*.docx
+~$*.xlsx
+
+# Local configuration
+Script/configs/anisonet_local_datasets.json
+
+# Large generated files
+*.h5
+*.h5ad
+*.npz
+*.npy
+*.tar
+*.tar.gz
+*.zip
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+*.tmp

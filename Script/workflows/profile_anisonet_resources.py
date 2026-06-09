@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import os
+
 import argparse
 import json
 import sys
@@ -11,7 +13,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-PROJECT_ROOT = Path(r"K:\YC\experiment\STagent")
+PROJECT_ROOT = Path(os.environ.get("ANISONET_PROJECT_ROOT", Path(__file__).resolve().parents[2]))
 SCRIPT_ROOT = PROJECT_ROOT / "Script"
 if str(SCRIPT_ROOT) not in sys.path:
     sys.path.insert(0, str(SCRIPT_ROOT))
@@ -209,3 +211,4 @@ def write_interpretation(frame: pd.DataFrame, hardware: dict[str, object], outpu
 
 if __name__ == "__main__":
     main()
+

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import os
+
 import json
 from pathlib import Path
 
@@ -9,7 +11,7 @@ import numpy as np
 import pandas as pd
 
 
-PROJECT_ROOT = Path(r"K:\YC\experiment\STagent")
+PROJECT_ROOT = Path(os.environ.get("ANISONET_PROJECT_ROOT", Path(__file__).resolve().parents[2]))
 ROOT = PROJECT_ROOT / "codexAnalysis"
 OUT_DIR = ROOT / "barrier_field_metrics"
 BRAIN_BATCH = ROOT / "batch" / "brain_aging_gse193107"
@@ -457,3 +459,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
