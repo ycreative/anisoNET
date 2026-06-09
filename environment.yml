@@ -1,0 +1,21 @@
+name: anisonet-gpb
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.10
+  - numpy>=1.26,<2
+  - pandas>=2.3
+  - scipy>=1.12
+  - scikit-image>=0.25
+  - pillow>=12
+  - matplotlib>=3.10
+  - h5py>=3.16
+  - openpyxl>=3.1
+  - python-docx>=1.2
+  - pip
+  - pip:
+      - torch>=2.1
+      - pypdfium2>=4.0

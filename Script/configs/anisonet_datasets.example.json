@@ -1,0 +1,56 @@
+{
+  "project_root": "/path/to/anisoNET",
+  "dataset_root": "/path/to/public_downloads",
+  "analysis_output_root": "/path/to/anisoNET/codexAnalysis",
+  "datasets": {
+    "brain_aging_gse193107": {
+      "role": "primary_analysis",
+      "source": "GEO GSE193107",
+      "tissue": "mouse_brain",
+      "raw_download_dir": "/path/to/public_downloads/GSE193107_RAW",
+      "processed_visium_dir": "/path/to/anisoNET/codexAnalysis/processed_visium/brain_aging_gse193107",
+      "samples": [
+        "GSM5773453_Young_mouse_brain_A1-1",
+        "GSM5773454_Young_mouse_brain_B1-1",
+        "GSM5773455_Young_mouse_brain_C1-1",
+        "GSM5773456_Young_mouse_brain_D1-1",
+        "GSM5773457_Old_mouse_brain_A1-2",
+        "GSM5773458_Old_mouse_brain_B1-2",
+        "GSM5773459_Old_mouse_brain_C1-2",
+        "GSM5773460_Old_mouse_brain_D1-2"
+      ],
+      "default_target_genes": ["Apoe", "Gfap"],
+      "default_barrier_genes": ["Mbp", "Plp1", "Mobp"]
+    },
+    "mouse_kidney_10x": {
+      "role": "cross_tissue_claim_boundary",
+      "source": "10x Genomics public Visium mouse kidney",
+      "tissue": "mouse_kidney",
+      "raw_download_dir": "/path/to/public_downloads/mouse_kidney_10x",
+      "processed_visium_dir": "/path/to/anisoNET/codexAnalysis/processed_visium/mouse_kidney_10x",
+      "samples": ["V1_Mouse_Kidney"],
+      "default_target_genes": ["Slc34a1", "Umod", "Slc12a3"],
+      "default_barrier_genes": ["Umod", "Slc12a1", "Aqp2"]
+    },
+    "sagittal_brain_10x": {
+      "role": "negative_or_mixed_claim_boundary",
+      "source": "10x Genomics public Visium mouse sagittal brain",
+      "tissue": "mouse_brain",
+      "raw_download_dir": "/path/to/public_downloads/sagittal_brain_10x",
+      "processed_visium_dir": "/path/to/anisoNET/codexAnalysis/processed_visium/sagittal_brain_10x",
+      "samples": ["Section_1_Sagittal_Anterior", "Section_2_Sagittal_Anterior"],
+      "default_target_genes": ["Apoe", "Gfap"],
+      "default_barrier_genes": ["Mbp", "Plp1", "Mobp"]
+    },
+    "liver_apap_gse280515": {
+      "role": "cross_tissue_annotation_boundary",
+      "source": "GEO GSE280515",
+      "tissue": "mouse_liver",
+      "raw_download_dir": "/path/to/public_downloads/GSE280515_RAW",
+      "processed_visium_dir": "/path/to/anisoNET/codexAnalysis/processed_visium/liver_apap_gse280515",
+      "samples": ["GSM8599602", "GSM8599603", "GSM8599604"],
+      "default_target_genes": ["Lyz2", "Spp1"],
+      "default_barrier_genes": ["Cps1", "Cyp2f2"]
+    }
+  }
+}

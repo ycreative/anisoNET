@@ -1,0 +1,16 @@
+cff-version: 1.2.0
+message: "If you use anisoNET, please cite the associated manuscript and this archived software release."
+title: "anisoNET: barrier-aware scalar spatial field inference for spatial transcriptomics"
+version: "0.1.0-rc"
+date-released: "2026-06-09"
+authors:
+  - family-names: "To be completed"
+    given-names: "Author"
+repository-code: "https://github.com/OWNER/anisoNET"
+license: "To be selected by the authors"
+keywords:
+  - spatial transcriptomics
+  - Visium
+  - physics-informed neural network
+  - anatomical barriers
+  - reproducibility
