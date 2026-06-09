@@ -18,6 +18,8 @@ from PIL import Image
 PROJECT_ROOT = Path(os.environ.get("ANISONET_PROJECT_ROOT", Path(__file__).resolve().parents[2]))
 ROOT = Path(os.environ.get("ANISONET_ANALYSIS_ROOT", PROJECT_ROOT / "codexAnalysis"))
 OUT_DIR = ROOT / "manuscript_figures" / "Figure1_method_overview"
+SOURCE_ASSET_DIR = OUT_DIR / "source_assets"
+D_SCHEMATIC_ASSET = "Fig1D_barrier_constrained_schematic_v2.png"
 
 SAMPLE = "GSM5773457_Old_mouse_brain_A1-2"
 TASK = "Apoe_CNS_Myelin"
@@ -60,7 +62,7 @@ def save_panel(fig: plt.Figure, stem: str) -> None:
 
 
 def panel_label(ax: plt.Axes, label: str, x: float = -0.08, y: float = 1.08) -> None:
-    ax.text(x, y, label, transform=ax.transAxes, fontsize=12, fontweight="bold", ha="left", va="top")
+    return None
 
 
 def load_array(name: str) -> np.ndarray:
@@ -284,24 +286,24 @@ def fig1a_data_and_task_definition(data: dict[str, np.ndarray]) -> None:
     ax3.axis("off")
     ax3.set_title("Task-specific priors", fontsize=8.2, fontweight="bold", pad=3)
     cards = [
-        (0.10, 0.72, "Target gene", "Apoe", "#d94841"),
-        (0.10, 0.48, "Barrier genes", "Mbp / Plp1 / Mobp", "#2266aa"),
-        (0.10, 0.24, "Histology", "H&E structure", "#6a994e"),
+        (0.10, 0.72, "Source prior", "example: Apoe", "#d94841"),
+        (0.10, 0.48, "Barrier module", "example: CNS myelin", "#2266aa"),
+        (0.10, 0.24, "Structural prior", "H&E tissue support", "#6a994e"),
     ]
     for x0, y0, title, value, color in cards:
         ax3.add_patch(Rectangle((x0, y0), 0.80, 0.16, facecolor="#fbfbf8", edgecolor=color, linewidth=0.8))
         ax3.text(x0 + 0.04, y0 + 0.105, title, fontsize=5.6, fontweight="bold", color=color)
         ax3.text(x0 + 0.04, y0 + 0.040, value, fontsize=5.7, color="#263238")
-    ax3.text(0.10, 0.07, "Goal: infer a continuous,\ntissue-constrained field.", fontsize=6.0, color="#263238")
+    ax3.text(0.10, 0.07, "Gene/module choices are\ndeclared per analysis task.", fontsize=5.8, color="#263238")
 
     ax4 = fig.add_subplot(gs[0, 3])
     ax4.axis("off")
-    ax4.set_title("Why barrier-aware?", fontsize=8.2, fontweight="bold", pad=3)
+    ax4.set_title("Barrier-constrained task", fontsize=8.2, fontweight="bold", pad=3)
     ax4.add_patch(Rectangle((0.10, 0.18), 0.80, 0.66, facecolor="#f7f7f5", edgecolor="#b6b6b6", linewidth=0.5))
     ax4.plot([0.22, 0.78], [0.42, 0.42], color="#2266aa", linewidth=5, solid_capstyle="round")
     ax4.scatter([0.28, 0.72], [0.62, 0.26], s=52, c=["#d94841", "#7c8a99"], edgecolors="white", linewidths=0.6)
     ax4.add_patch(FancyArrowPatch((0.30, 0.60), (0.70, 0.28), arrowstyle="-|>", mutation_scale=9, linewidth=0.8, color="#7c8a99", linestyle="--"))
-    ax4.text(0.15, 0.08, "Nearby spots can be separated\nby tissue barriers.", fontsize=6.1, color="#263238")
+    ax4.text(0.15, 0.08, "Geometric proximity can conflict\nwith anatomical resistance.", fontsize=6.1, color="#263238")
     save_panel(fig, "Fig1A_data_and_task_definition")
 
 
@@ -376,41 +378,20 @@ def fig1c_scalar_pinn_architecture() -> None:
 
 
 def fig1d_barrier_mechanism_explanation() -> None:
-    fig = plt.figure(figsize=(7.25, 2.20))
-    gs = gridspec.GridSpec(1, 3, figure=fig, width_ratios=[1, 1, 0.75], wspace=0.22)
-    panel_names = [("Unconstrained smoothing", False), ("Barrier-aware field", True)]
-    for idx, (title, barrier_aware) in enumerate(panel_names):
-        ax = fig.add_subplot(gs[0, idx])
-        if idx == 0:
-            panel_label(ax, "D", x=-0.08, y=1.08)
-        ax.set_title(title, fontsize=8.0, fontweight="bold", pad=2)
-        ax.set_xlim(0, 1)
-        ax.set_ylim(0, 1)
-        ax.set_aspect("equal")
-        ax.axis("off")
-        ax.add_patch(Rectangle((0.04, 0.06), 0.92, 0.86, facecolor="#fbfbf8", edgecolor="#b8b8b8", linewidth=0.5))
-        ax.plot([0.50, 0.50], [0.12, 0.86], color="#2266aa", linewidth=5, alpha=0.95, solid_capstyle="round")
-        centers = [(0.25, 0.55), (0.38, 0.48), (0.62, 0.48), (0.75, 0.40)]
-        sizes = [1600, 900, 750 if not barrier_aware else 150, 450 if not barrier_aware else 80]
-        alphas = [0.28, 0.23, 0.20 if not barrier_aware else 0.08, 0.16 if not barrier_aware else 0.04]
-        for (x, y), size, alpha in zip(centers, sizes, alphas):
-            ax.scatter([x], [y], s=size, color="#d94841", alpha=alpha, edgecolors="none")
-        ax.scatter([0.23], [0.56], s=45, color="#d94841", edgecolors="white", linewidths=0.6)
-        if barrier_aware:
-            ax.annotate("", xy=(0.43, 0.58), xytext=(0.30, 0.56), arrowprops={"arrowstyle": "-|>", "lw": 1.0, "color": "#d94841"})
-            ax.text(0.57, 0.72, "low D(x,y)\nattenuates\ncross-barrier\ntransfer", fontsize=5.7, color="#263238")
-        else:
-            ax.annotate("", xy=(0.72, 0.43), xytext=(0.30, 0.56), arrowprops={"arrowstyle": "-|>", "lw": 1.0, "color": "#7c8a99", "linestyle": "--"})
-            ax.text(0.57, 0.72, "distance-only\nsmoothing can\ncross tissue\nbarriers", fontsize=5.7, color="#263238")
-
-    ax3 = fig.add_subplot(gs[0, 2])
-    ax3.axis("off")
-    ax3.set_title("Mechanism", fontsize=8.0, fontweight="bold", pad=2)
-    ax3.add_patch(Rectangle((0.06, 0.20), 0.88, 0.60, facecolor="#f6f1e7", edgecolor="#263238", linewidth=0.5))
-    ax3.text(0.12, 0.65, r"$B(x,y)$ high", fontsize=7.0, color="#2266aa", fontweight="bold")
-    ax3.text(0.12, 0.50, r"$D(x,y)$ low", fontsize=7.0, color="#7b5ea7", fontweight="bold")
-    ax3.text(0.12, 0.35, "field transfer\nis attenuated", fontsize=6.2, color="#263238")
-    fig.suptitle("Barrier prior changes the geometry of field inference", fontsize=8.8, fontweight="bold", y=1.03)
+    schematic_path = SOURCE_ASSET_DIR / D_SCHEMATIC_ASSET
+    if not schematic_path.exists():
+        schematic_path = PROJECT_ROOT / "reproducibility" / "assets" / D_SCHEMATIC_ASSET
+    if not schematic_path.exists():
+        raise FileNotFoundError(f"Missing Figure 1D schematic asset: {schematic_path}")
+    fig = plt.figure(figsize=(7.25, 2.25))
+    ax = fig.add_subplot(111)
+    image = Image.open(schematic_path).convert("RGB")
+    ax.imshow(image)
+    ax.set_title("Barrier-constrained attenuation", fontsize=9.0, fontweight="bold", pad=3)
+    ax.set_xticks([])
+    ax.set_yticks([])
+    for spine in ax.spines.values():
+        spine.set_visible(False)
     save_panel(fig, "Fig1D_barrier_mechanism_explanation")
 
 
@@ -469,49 +450,6 @@ def fig1_metric_ribbon(data: dict[str, np.ndarray]) -> None:
     save_panel(fig, "Fig1_metric_ribbon")
 
 
-def fig1f_validation_roadmap(data: dict[str, np.ndarray]) -> None:
-    fig = plt.figure(figsize=(7.25, 2.05))
-    gs = gridspec.GridSpec(1, 2, figure=fig, width_ratios=[0.62, 1.0], wspace=0.14)
-    ax_metric = fig.add_subplot(gs[0, 0])
-    ax_metric.axis("off")
-    panel_label(ax_metric, "F", x=-0.05, y=1.06)
-    metrics = pd.read_csv(BATCH_METRICS)
-    row = metrics[(metrics["sample"] == SAMPLE) & (metrics["field_type"] == "gauss07")].iloc[0]
-    preflight = json.loads((PREFLIGHT_DIR / "preflight_metrics.json").read_text(encoding="utf-8"))
-    cards = [
-        ("Source fit", f"{float(row['spot_pearson_source']):.3f}", "#3f7f93"),
-        ("Smoothness", f"{float(row['roughness_grad_p95']):.3f}", "#c58c2b"),
-        ("Leakage", f"{float(row['background_to_tissue_ratio']):.3f}", "#6a994e"),
-        ("R scale", f"{float(preflight['resistance_ratio_in_tissue']):.0f}x", "#7b5ea7"),
-    ]
-    ax_metric.text(0.06, 0.88, "Metric families", fontsize=8.2, fontweight="bold", color="#263238")
-    for i, (name, value, color) in enumerate(cards):
-        y = 0.67 - i * 0.16
-        ax_metric.add_patch(Rectangle((0.07, y), 0.80, 0.11, facecolor="#fbfbf8", edgecolor="#b8b8b8", linewidth=0.45))
-        ax_metric.text(0.11, y + 0.068, name, fontsize=5.8, fontweight="bold", color="#263238")
-        ax_metric.text(0.72, y + 0.068, value, fontsize=6.0, fontweight="bold", color=color, ha="right")
-
-    ax = fig.add_subplot(gs[0, 1])
-    ax.axis("off")
-    ax.text(0.04, 0.88, "Evidence roadmap", fontsize=8.4, fontweight="bold", color="#263238")
-    tiles = [
-        ("Figure 2", "Primary brain\nApoe/Gfap fields", "#dceaf3"),
-        ("Figure 3", "Held-out boundary\n+ synthetic leakage", "#f4e6cf"),
-        ("Figure 4", "Robustness\nand profiles", "#e2efe4"),
-        ("Figure 5", "Cross-tissue\nclaim boundary", "#eee4f2"),
-    ]
-    x0 = 0.05
-    for i, (head, text, color) in enumerate(tiles):
-        x = x0 + i * 0.235
-        ax.add_patch(Rectangle((x, 0.22), 0.19, 0.48, facecolor=color, edgecolor="#8d99a6", linewidth=0.55))
-        ax.text(x + 0.02, 0.60, head, fontsize=7.5, fontweight="bold", color="#263238")
-        ax.text(x + 0.02, 0.39, text, fontsize=6.5, color="#263238", va="center")
-        if i < len(tiles) - 1:
-            ax.annotate("", xy=(x + 0.213, 0.46), xytext=(x + 0.194, 0.46), arrowprops={"arrowstyle": "-|>", "lw": 0.7, "color": "#263238"})
-    ax.text(0.05, 0.08, "Figure 1 defines the method; later figures test application, mechanism, robustness, and boundary.", fontsize=6.1, color="#5b5b5b")
-    save_panel(fig, "Fig1F_validation_roadmap")
-
-
 def rough_assembly() -> None:
     panel_files = [
         ("A", "Fig1A_data_and_task_definition.png"),
@@ -519,17 +457,15 @@ def rough_assembly() -> None:
         ("C", "Fig1C_scalar_pinn_architecture.png"),
         ("D", "Fig1D_barrier_mechanism_explanation.png"),
         ("E", "Fig1E_output_and_local_zoom.png"),
-        ("F", "Fig1F_validation_roadmap.png"),
     ]
-    fig = plt.figure(figsize=(7.4, 8.35))
-    gs = gridspec.GridSpec(5, 2, figure=fig, height_ratios=[0.92, 0.86, 0.86, 1.05, 0.68], wspace=0.08, hspace=0.07)
+    fig = plt.figure(figsize=(7.4, 7.25))
+    gs = gridspec.GridSpec(4, 2, figure=fig, height_ratios=[0.95, 0.90, 0.90, 1.12], wspace=0.08, hspace=0.08)
     layout = {
         "A": gs[0, :],
         "B": gs[1, :],
         "C": gs[2, 0],
         "D": gs[2, 1],
         "E": gs[3, :],
-        "F": gs[4, :],
     }
     for label, filename in panel_files:
         ax = fig.add_subplot(layout[label])
@@ -553,13 +489,13 @@ Use these panels for the current GPB-style Figure 1 method overview:
 - `Fig1C_scalar_pinn_architecture.pdf/png`
 - `Fig1D_barrier_mechanism_explanation.pdf/png`
 - `Fig1E_output_and_local_zoom.pdf/png`
-- `Fig1F_validation_roadmap.pdf/png`
 - `Figure1_rough_assembly.pdf/png`
 
 Current revision note:
 
 - Figure 1 now uses real GSE193107 old A1 Apoe/CNS-myelin data as the visual anchor.
-- The figure defines data inputs, task-specific priors, field construction, scalar PINN architecture, barrier mechanism, representative output, local zoom QC, metric families, and evidence roadmap.
+- The figure defines data inputs, task-specific priors, field construction, scalar PINN architecture, barrier mechanism, representative output, and local zoom QC.
+- Panel letters are intentionally not embedded in panel assets; add final A-E labels manually during Inkscape assembly.
 - The rough assembly is for orientation only; final journal spacing and typography should be refined manually.
 """
     (OUT_DIR / "CURRENT_PANEL_SET.md").write_text(text, encoding="utf-8")
@@ -574,7 +510,6 @@ def main() -> None:
     fig1c_scalar_pinn_architecture()
     fig1d_barrier_mechanism_explanation()
     fig1e_output_and_local_zoom(data)
-    fig1f_validation_roadmap(data)
     rough_assembly()
     write_current_panel_set()
     print(f"Wrote Figure 1 panels to {OUT_DIR}")

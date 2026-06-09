@@ -53,7 +53,7 @@ def save_panel(fig: plt.Figure, stem: str) -> None:
 
 
 def panel_label(ax: plt.Axes, label: str, x: float = -0.10, y: float = 1.08) -> None:
-    ax.text(x, y, label, transform=ax.transAxes, fontsize=12, fontweight="bold", ha="left", va="top")
+    return None
 
 
 def clean_label(label: str) -> str:

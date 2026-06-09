@@ -72,7 +72,7 @@ def save_panel(fig: plt.Figure, stem: str) -> None:
 
 
 def panel_label(ax: plt.Axes, label: str, x: float = -0.13, y: float = 1.10) -> None:
-    ax.text(x, y, label, transform=ax.transAxes, fontsize=12, fontweight="bold", ha="left", va="top")
+    return None
 
 
 def clean_dataset(name: str) -> str:
@@ -530,7 +530,6 @@ def fig5f_evidence_role_matrix() -> None:
         else:
             role = display.iloc[r - 1]["Role"]
             cell.set_facecolor(ROLE_COLORS.get(role, "#f8f9fa") if c == 2 else ("#fbfbfb" if r % 2 == 0 else "white"))
-    ax.text(-0.035, 1.04, "H", transform=ax.transAxes, fontsize=12, fontweight="bold", ha="left", va="top")
     ax.set_title("Cross-tissue claim calibration", loc="left", fontsize=8.6, pad=10)
     save_panel(fig, "Fig5H_cross_tissue_evidence_role_matrix")
 

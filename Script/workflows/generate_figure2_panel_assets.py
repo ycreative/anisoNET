@@ -63,7 +63,7 @@ def save_panel(fig: plt.Figure, stem: str) -> tuple[Path, Path]:
 
 
 def panel_label(ax: plt.Axes, label: str, x: float = -0.08, y: float = 1.08) -> None:
-    ax.text(x, y, label, transform=ax.transAxes, fontsize=12, fontweight="bold", ha="left", va="top")
+    return None
 
 
 def sample_label(sample: str) -> str:

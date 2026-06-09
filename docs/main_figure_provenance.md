@@ -23,18 +23,19 @@ Current panels:
 - `Fig1C_scalar_pinn_architecture`
 - `Fig1D_barrier_mechanism_explanation`
 - `Fig1E_output_and_local_zoom`
-- `Fig1F_validation_roadmap`
 
 Primary inputs:
 
 - `codexAnalysis/preflight/brain_aging_gse193107/GSM5773457_Old_mouse_brain_A1-2/Apoe_CNS_Myelin`
 - `codexAnalysis/pinn/brain_aging_gse193107/GSM5773457_Old_mouse_brain_A1-2/Apoe_CNS_Myelin/fourier_refined_16g_gauss07_batch`
 - `codexAnalysis/processed_visium/brain_aging_gse193107/GSM5773457_Old_mouse_brain_A1-2/spatial`
+- `codexAnalysis/manuscript_figures/Figure1_method_overview/source_assets/Fig1D_barrier_constrained_schematic_v2.png`
 
 Evidence role:
 
-- Define the biological task, scalar model implementation, barrier mechanism, representative output, and evidence roadmap.
+- Define the biological task, scalar model implementation, barrier mechanism, and representative output.
 - Prevent overclaiming by explicitly describing the current implementation as scalar rather than tensor-valued or divergence-form.
+- Panel letters are intentionally not embedded in generated panel assets; add final A-E labels manually during vector assembly.
 
 ## Figure 2: Primary GSE193107 Brain Application
 
