@@ -9,6 +9,7 @@ from pathlib import Path
 import h5py
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+import matplotlib.tri as mtri
 import numpy as np
 import pandas as pd
 from scipy import sparse
@@ -18,6 +19,7 @@ from PIL import Image
 PROJECT_ROOT = Path(os.environ.get("ANISONET_PROJECT_ROOT", Path(__file__).resolve().parents[2]))
 ROOT = Path(os.environ.get("ANISONET_ANALYSIS_ROOT", PROJECT_ROOT / "codexAnalysis"))
 OUT_DIR = ROOT / "manuscript_figures" / "Figure5_cross_tissue_boundary"
+EXPORT_DPI = 600
 
 PROCESSED = ROOT / "processed_visium"
 KIDNEY_PROCESSED = PROCESSED / "mouse_kidney_10x" / "V1_Mouse_Kidney"
@@ -28,6 +30,7 @@ EVIDENCE = ROOT / "cross_tissue" / "evidence_summary" / "cross_tissue_evidence_s
 KIDNEY_MAIN = ROOT / "barrier_split_anisonet" / "mouse_kidney_10x" / "V1_Mouse_Kidney" / "evidence_boundary_diagnostics" / "kidney_main_task_evidence_boundary.csv"
 KIDNEY_MARKER = ROOT / "barrier_split_anisonet" / "mouse_kidney_10x" / "V1_Mouse_Kidney" / "evidence_boundary_diagnostics" / "kidney_marker_screen_evidence_boundary.csv"
 MARKER_RANK = ROOT / "cross_tissue" / "mouse_kidney_10x" / "V1_Mouse_Kidney" / "marker_task_screen" / "kidney_marker_task_screen_top_recommendations.csv"
+TARGETED_GENE = ROOT / "targeted_gene_extension" / "full_metrics_by_dataset_gene.csv"
 
 PAPER_COLORS = {
     "teal": "#4C9A91",
@@ -76,8 +79,8 @@ def ensure_dir(path: Path) -> None:
 
 def save_panel(fig: plt.Figure, stem: str) -> None:
     ensure_dir(OUT_DIR)
-    fig.savefig(OUT_DIR / f"{stem}.png", dpi=600, bbox_inches="tight")
-    fig.savefig(OUT_DIR / f"{stem}.pdf", bbox_inches="tight")
+    fig.savefig(OUT_DIR / f"{stem}.png", dpi=EXPORT_DPI, bbox_inches="tight")
+    fig.savefig(OUT_DIR / f"{stem}.pdf", dpi=EXPORT_DPI, bbox_inches="tight")
     plt.close(fig)
 
 
@@ -113,6 +116,48 @@ def normalize_values(values: np.ndarray) -> np.ndarray:
     if hi <= lo:
         hi = lo + 1e-6
     return np.clip((data - lo) / (hi - lo), 0, 1)
+
+
+def spot_triangulation(spatial: dict) -> mtri.Triangulation | None:
+    x = np.asarray(spatial["x"], dtype=float)
+    y = np.asarray(spatial["y"], dtype=float)
+    if x.size < 4:
+        return None
+    triangulation = mtri.Triangulation(x, y)
+    triangles = triangulation.triangles
+    pts = np.column_stack([x, y])
+    edge_lengths = []
+    for pair in [(0, 1), (1, 2), (2, 0)]:
+        edge = pts[triangles[:, pair[0]]] - pts[triangles[:, pair[1]]]
+        edge_lengths.append(np.sqrt(np.sum(edge * edge, axis=1)))
+    max_edge = np.max(np.vstack(edge_lengths), axis=0)
+    limit = np.nanpercentile(max_edge, 92) * 1.35
+    triangulation.set_mask(max_edge > limit)
+    return triangulation
+
+
+def overlay_marker_boundary(
+    ax: plt.Axes,
+    spatial: dict,
+    values: np.ndarray,
+    color: tuple[float, float, float] | str,
+    *,
+    level: float | None = None,
+    linewidth: float = 0.85,
+) -> None:
+    triangulation = spot_triangulation(spatial)
+    if triangulation is None:
+        return
+    vals = np.asarray(values, dtype=float)
+    finite = vals[np.isfinite(vals)]
+    if finite.size == 0 or np.nanmax(finite) <= np.nanmin(finite):
+        return
+    contour_level = float(level if level is not None else max(0.62, np.nanpercentile(finite, 88)))
+    contour_level = min(max(contour_level, float(np.nanmin(finite)) + 1e-6), float(np.nanmax(finite)) - 1e-6)
+    try:
+        ax.tricontour(triangulation, vals, levels=[contour_level], colors=[color], linewidths=linewidth, alpha=0.95)
+    except ValueError:
+        return
 
 
 def load_spatial_dataset(dataset_root: Path, genes: list[str]) -> dict:
@@ -221,6 +266,8 @@ def show_rgb_composite(ax: plt.Axes, spatial: dict, gene_colors: dict[str, tuple
     rgb = np.clip(0.80 * (1 - intensity[:, None]) + mixed * (0.25 + 0.90 * intensity[:, None]), 0, 1)
     rgba = np.column_stack([rgb, 0.28 + 0.68 * intensity])
     ax.scatter(spatial["x"], spatial["y"], s=8.5, c=rgba, edgecolor="white", linewidth=0.08)
+    for gene, color in gene_colors.items():
+        overlay_marker_boundary(ax, spatial, normalize_values(spatial["expr"][gene]), color, linewidth=0.75)
     ax.set_title(title, fontsize=7.2, pad=2)
     ax.set_xticks([])
     ax.set_yticks([])
@@ -377,58 +424,38 @@ def fig5b_kidney_main_boundary() -> None:
 
 
 def fig5c_kidney_marker_followup() -> None:
-    df = pd.read_csv(KIDNEY_MARKER)
-    df = df.sort_values("high_barrier_idw_pearson_delta", ascending=True)
-    df["short_task"] = (
-        df["task"]
-        .str.replace("_barrier", "", regex=False)
-        .str.replace("_proximal", " prox", regex=False)
-        .str.replace("_TAL", " TAL", regex=False)
+    df = pd.read_csv(TARGETED_GENE)
+    out = df[df["dataset"].eq("mouse_kidney_10x")].copy()
+    out = out.sort_values("spot_pearson_source_mean", ascending=True)
+    y = np.arange(len(out))
+    fig, ax = plt.subplots(figsize=(3.0, 2.05))
+    panel_label(ax, "G", x=-0.22, y=1.10)
+    for yi, row in zip(y, out.itertuples(index=False)):
+        ax.plot(
+            [0.65, row.spot_pearson_source_mean],
+            [yi, yi],
+            color=PAPER_COLORS["teal"],
+            linewidth=1.85,
+            alpha=0.75,
+        )
+    ax.scatter(
+        out["spot_pearson_source_mean"],
+        y,
+        s=40,
+        color=PAPER_COLORS["teal"],
+        edgecolor=PAPER_COLORS["dark"],
+        linewidth=0.35,
+        zorder=3,
     )
-    spatial = load_spatial_dataset(KIDNEY_PROCESSED, ["Slc12a3", "Calb1", "Aqp2", "Umod", "Slc12a1", "Slc34a1"])
-    fig = plt.figure(figsize=(8.8, 3.2))
-    gs = fig.add_gridspec(2, 5, width_ratios=[1, 1, 1, 1.35, 1.35], wspace=0.25, hspace=0.20)
-    map_axes = [fig.add_subplot(gs[0, i]) for i in range(3)] + [fig.add_subplot(gs[1, i]) for i in range(3)]
-    panel_label(map_axes[0], "G", x=-0.22, y=1.08)
-    show_gene(map_axes[0], spatial, "Slc12a3", "Slc12a3\nbest small positive", "Greens")
-    show_gene(map_axes[1], spatial, "Calb1", "Calb1\nnegative follow-up", "PuRd")
-    show_gene(map_axes[2], spatial, "Aqp2", "Aqp2\nnegative follow-up", "Purples")
-    show_score(map_axes[3], spatial, ["Umod", "Slc12a1"], "TAL barrier\nUmod + Slc12a1", "PuBuGn")
-    show_score(map_axes[4], spatial, ["Slc34a1"], "Proximal barrier\nSlc34a1", "YlOrBr")
-    map_axes[5].axis("off")
-    map_axes[5].text(
-        0.02,
-        0.78,
-        "Spatially plausible,\nbut follow-up gains\nremain small.",
-        fontsize=6.2,
-        color="#35424d",
-        ha="left",
-        va="top",
-    )
-    ax_score = fig.add_subplot(gs[:, 3])
-    ax_delta = fig.add_subplot(gs[:, 4])
-    y = np.arange(len(df))[::-1]
-    ax_score.axvline(0, color="#333333", linewidth=0.55)
-    for yi, value in zip(y, df["task_score"]):
-        ax_score.plot([0, value], [yi, yi], color=PAPER_COLORS["sage"], linewidth=1.0)
-        ax_score.scatter(value, yi, s=28, color=PAPER_COLORS["sage"], edgecolor=PAPER_COLORS["dark"], linewidth=0.35)
-    ax_score.set_yticks(y)
-    ax_score.set_yticklabels(df["short_task"], fontsize=6.0)
-    ax_score.set_xlabel("Screen task score", fontsize=6.6)
-    ax_score.set_title("Screen rank", fontsize=7.5)
-    ax_score.grid(axis="x", color="#dddddd", linewidth=0.45, alpha=0.75)
-    ax_delta.axvline(0, color="#333333", linewidth=0.55)
-    for yi, value in zip(y, df["high_barrier_idw_pearson_delta"]):
-        color = PAPER_COLORS["teal"] if value >= 0 else PAPER_COLORS["terracotta"]
-        ax_delta.plot([0, value], [yi, yi], color=color, linewidth=1.0)
-        ax_delta.scatter(value, yi, s=28, color=color, edgecolor=PAPER_COLORS["dark"], linewidth=0.35)
-    ax_delta.set_yticks(y)
-    ax_delta.set_yticklabels([])
-    ax_delta.set_xlabel("Pearson delta", fontsize=6.6)
-    ax_delta.set_title("Follow-up effect", fontsize=7.5)
-    ax_delta.grid(axis="x", color="#dddddd", linewidth=0.45, alpha=0.75)
-    fig.suptitle("Kidney marker-screen follow-up: spatial task plausibility and small effect sizes", fontsize=8.8, fontweight="bold", y=1.02)
-    save_panel(fig, "Fig5G_kidney_marker_screen_followup")
+    ax.axvline(0.65, color=PAPER_COLORS["dark"], linewidth=0.55, linestyle=(0, (2.5, 2.5)))
+    ax.set_yticks(y)
+    ax.set_yticklabels(out["target_gene"], fontsize=6.2)
+    ax.set_xlim(0.64, 0.95)
+    ax.set_xlabel("Fitted-source Pearson", fontsize=6.4)
+    ax.set_title("Kidney marker extension", fontsize=7.7)
+    ax.grid(axis="x", color="#dddddd", linewidth=0.45, alpha=0.75)
+    ax.tick_params(axis="x", labelsize=5.8)
+    save_panel(fig, "Fig5G_kidney_marker_extension")
 
 
 def fig5d_liver_annotation_boundary() -> None:
@@ -488,11 +515,29 @@ def fig5f_transfer_delta_summary() -> None:
 
     fig, ax = plt.subplots(figsize=(8.2, 3.4))
     ax.axvline(0, color="#333333", linewidth=0.65)
+    x_clip_left = -0.035
+    xlim = (-0.040, 0.0125)
+    ax.axvline(x_clip_left, color="#777777", linewidth=0.55, linestyle=(0, (2, 2)), alpha=0.65)
     for yi, value, color in zip(y, keep["candidate_value"], colors):
-        ax.plot([0, value], [yi, yi], color=color, linewidth=1.2, alpha=0.9)
-        ax.scatter(value, yi, s=38, color=color, edgecolor="#333333", linewidth=0.35, zorder=3)
+        display_value = max(float(value), x_clip_left)
+        marker = "<" if value < x_clip_left else "o"
+        size = 48 if value < x_clip_left else 38
+        ax.plot([0, display_value], [yi, yi], color=color, linewidth=1.2, alpha=0.9)
+        ax.scatter(display_value, yi, s=size, marker=marker, color=color, edgecolor="#333333", linewidth=0.35, zorder=3)
+        if value < x_clip_left:
+            ax.text(
+                x_clip_left + 0.0012,
+                yi + 0.26,
+                f"actual {float(value):.3f}",
+                fontsize=5.7,
+                color=color,
+                ha="left",
+                va="bottom",
+            )
     ax.set_yticks(y)
     ax.set_yticklabels(keep["label"], fontsize=6.3)
+    ax.set_xlim(*xlim)
+    ax.set_xticks([-0.03, -0.02, -0.01, 0.00, 0.01])
     ax.set_xlabel("Pearson delta or candidate effect")
     ax.set_title("Transfer effects are task-specific and claim-calibrated", loc="left", fontsize=8.6)
     ax.grid(axis="x", color="#dddddd", linewidth=0.45, alpha=0.75)
@@ -502,45 +547,121 @@ def fig5f_transfer_delta_summary() -> None:
 
 def fig5f_evidence_role_matrix() -> None:
     df = pd.read_csv(EVIDENCE)
-    rows = []
-    for _, row in df.iterrows():
-        rows.append(
-            [
-                clean_dataset(row["dataset"]).replace("\n", " "),
-                str(row["task_or_target"]),
-                str(row["summary_role"]),
-                float(row["candidate_value"]),
-            ]
-        )
-    display = pd.DataFrame(rows, columns=["Dataset", "Task", "Role", "Value"])
-    fig, ax = plt.subplots(figsize=(9.0, 4.2))
-    ax.axis("off")
-    cell_text = []
-    for _, row in display.iterrows():
-        value = row["Value"]
-        value_txt = f"{value:.3f}" if abs(value) >= 0.01 else f"{value:.4f}"
-        cell_text.append([row["Dataset"], row["Task"], row["Role"], value_txt])
-    table = ax.table(
-        cellText=cell_text,
-        colLabels=["Dataset", "Task", "Evidence role", "Value"],
-        cellLoc="left",
-        colLoc="left",
-        loc="center",
-        colWidths=[0.18, 0.25, 0.40, 0.17],
+
+    block_order = [
+        "primary_kidney_task",
+        "prior_geometry_check",
+        "marker_screen_followup",
+        "annotation_boundary",
+        "healthy_brain_portability",
+    ]
+    block_labels = {
+        "primary_kidney_task": "Kidney\nmain task",
+        "prior_geometry_check": "Kidney\nprior geometry",
+        "marker_screen_followup": "Kidney\nmarker screen",
+        "annotation_boundary": "Liver/APAP\nannotation",
+        "healthy_brain_portability": "Sagittal brain\nnegative control",
+    }
+    role_order = [
+        "method-development signal",
+        "diagnostic / mixed",
+        "small supplementary",
+        "claim boundary",
+        "negative control",
+    ]
+    role_colors = {
+        "method-development signal": PAPER_COLORS["teal"],
+        "diagnostic / mixed": PAPER_COLORS["slate"],
+        "small supplementary": PAPER_COLORS["sage"],
+        "claim boundary": PAPER_COLORS["terracotta"],
+        "negative control": PAPER_COLORS["slate"],
+    }
+
+    def role_group(role: str) -> str:
+        if "negative control" in role:
+            return "negative control"
+        if role == "method-development":
+            return "method-development signal"
+        if "diagnostic" in role or "mixed" in role:
+            return "diagnostic / mixed"
+        if "supplementary" in role:
+            return "small supplementary"
+        return "claim boundary"
+
+    def effect_symbol(values: pd.Series) -> str:
+        vals = values.astype(float)
+        pos = int((vals > 0).sum())
+        neg = int((vals < 0).sum())
+        if pos and neg:
+            return "+/-"
+        if pos:
+            return "+"
+        if neg:
+            return "-"
+        return "0"
+
+    grouped = (
+        df.assign(role_group=df["summary_role"].map(role_group))
+        .groupby(["evidence_block", "role_group"], sort=False)
+        .agg(n=("task_or_target", "size"), value=("candidate_value", effect_symbol))
+        .reset_index()
     )
-    table.auto_set_font_size(False)
-    table.set_fontsize(6.5)
-    table.scale(1, 1.24)
-    for (r, c), cell in table.get_celld().items():
-        cell.set_linewidth(0.42)
-        cell.set_edgecolor("#cccccc")
-        if r == 0:
-            cell.set_facecolor("#e9ecef")
-            cell.set_text_props(weight="bold")
-        else:
-            role = display.iloc[r - 1]["Role"]
-            cell.set_facecolor(ROLE_COLORS.get(role, "#f8f9fa") if c == 2 else ("#fbfbfb" if r % 2 == 0 else "white"))
-    ax.set_title("Cross-tissue claim calibration", loc="left", fontsize=8.6, pad=10)
+
+    fig, ax = plt.subplots(figsize=(7.7, 3.35))
+    for x, block in enumerate(block_order):
+        ax.axvline(x, color="#eeeeee", linewidth=0.65, zorder=0)
+    for y, role in enumerate(role_order):
+        ax.axhline(y, color="#eeeeee", linewidth=0.65, zorder=0)
+
+    for _, row in grouped.iterrows():
+        if row["evidence_block"] not in block_order or row["role_group"] not in role_order:
+            continue
+        x = block_order.index(row["evidence_block"])
+        y = role_order.index(row["role_group"])
+        n = int(row["n"])
+        color = role_colors[row["role_group"]]
+        ax.scatter(
+            x,
+            y,
+            s=230 + 120 * n,
+            color=color,
+            edgecolor=PAPER_COLORS["dark"],
+            linewidth=0.55,
+            alpha=0.92,
+            zorder=3,
+        )
+        ax.text(
+            x,
+            y,
+            f"{row['value']}\n{n}",
+            ha="center",
+            va="center",
+            fontsize=6.1,
+            color="white" if row["role_group"] != "small supplementary" else PAPER_COLORS["dark"],
+            fontweight="bold",
+            zorder=4,
+        )
+
+    ax.set_xlim(-0.55, len(block_order) - 0.45)
+    ax.set_ylim(len(role_order) - 0.55, -0.55)
+    ax.set_xticks(range(len(block_order)))
+    ax.set_xticklabels([block_labels[x] for x in block_order], fontsize=6.7)
+    ax.set_yticks(range(len(role_order)))
+    ax.set_yticklabels(role_order, fontsize=6.8)
+    ax.tick_params(length=0)
+    for spine in ax.spines.values():
+        spine.set_visible(False)
+    ax.set_title("Cross-tissue evidence-role matrix", loc="left", fontsize=8.8, fontweight="bold", pad=9)
+    ax.text(
+        0.0,
+        -0.22,
+        "Cell text: effect direction (+/-/0) and number of evidence rows. Detailed values are retained in Supplementary Tables S6-S7.",
+        transform=ax.transAxes,
+        fontsize=6.3,
+        color="#5b6470",
+        ha="left",
+        va="top",
+    )
     save_panel(fig, "Fig5H_cross_tissue_evidence_role_matrix")
 
 
@@ -568,7 +689,7 @@ def rough_assembly() -> None:
         "Fig5D_sagittal_spatial_negative_control_context",
         "Fig5E_cross_tissue_task_matrix",
         "Fig5F_cross_tissue_transfer_delta_lollipop",
-        "Fig5G_kidney_marker_screen_followup",
+        "Fig5G_kidney_marker_extension",
         "Fig5H_cross_tissue_evidence_role_matrix",
     ]
     imgs = [Image.open(OUT_DIR / f"{stem}.png").convert("RGB") for stem in stems]
@@ -593,8 +714,8 @@ def rough_assembly() -> None:
             canvas.paste(thumbs[idx], (x, y))
             x += thumb_w + gutter
         y += row_heights[row_idx] + gutter
-    canvas.save(OUT_DIR / "Figure5_rough_assembly.png", dpi=(300, 300))
-    canvas.save(OUT_DIR / "Figure5_rough_assembly.pdf", resolution=300)
+    canvas.save(OUT_DIR / "Figure5_rough_assembly.png", dpi=(EXPORT_DPI, EXPORT_DPI))
+    canvas.save(OUT_DIR / "Figure5_rough_assembly.pdf", resolution=EXPORT_DPI)
 
 
 def main() -> None:

@@ -56,7 +56,8 @@ def iter_hits(path: Path, text: str):
     lines = text.splitlines()
     for lineno, line in enumerate(lines, start=1):
         for term, note in TERMS:
-            if re.search(re.escape(term), line, flags=re.IGNORECASE):
+            pattern = r"\bLLM\b" if term == "LLM" else re.escape(term)
+            if re.search(pattern, line, flags=re.IGNORECASE):
                 yield {
                     "file": str(path),
                     "line": lineno,

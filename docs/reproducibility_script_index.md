@@ -119,6 +119,32 @@ Cross-tissue summary:
 
 - `Script/workflows/cross_tissue_evidence_summary.py`
 
+## Targeted Multi-Gene Extension
+
+Added 2026-06-10:
+
+- `Script/workflows/select_target_gene_extension.py`
+- `Script/workflows/run_targeted_gene_extension.py`
+- `Script/workflows/summarize_targeted_gene_extension.py`
+- `Script/workflows/visualize_targeted_gene_extension_fields.py`
+
+Primary outputs:
+
+- `codexAnalysis/targeted_gene_extension/gene_selection_rules.md`
+- `codexAnalysis/targeted_gene_extension/selected_gene_manifest.csv`
+- `codexAnalysis/targeted_gene_extension/run_manifest.csv`
+- `codexAnalysis/targeted_gene_extension/full_metrics_summary.csv`
+- `codexAnalysis/targeted_gene_extension/full_metrics_by_dataset_gene.csv`
+- `codexAnalysis/targeted_gene_extension/full_run_interpretation.md`
+- `codexAnalysis/targeted_gene_extension/field_contact_sheets`
+
+Notes:
+
+- The extension is a targeted a priori screen, not an all-gene discovery analysis.
+- Use full-profile `fourier_refined_low_pde_16g` outputs for figure decisions.
+- Treat smoke outputs as execution checks only.
+- Interpret source-fidelity metrics as fitted-source agreement, not held-out prediction.
+
 ## Figure Asset Generation
 
 Current manuscript panel workflows:
@@ -161,9 +187,13 @@ Claim-boundary QC:
 
 Current manuscript and table outputs:
 
-- `draft/revised/anisoNET_GPB_integrated_manuscript_v4.docx`
-- `draft/revised/anisoNET_GPB_supplementary_tables_working.xlsx`
+- `draft/revised/anisoNET_GPB_integrated_manuscript_v8.docx`
+- `draft/revised/anisoNET_GPB_cover_letter_conservative_v1.docx`
+- `draft/revised/anisoNET_GPB_response_to_reviewers_v2_template.docx`
+- `draft/revised/anisoNET_GPB_supplementary_figure_legends_final_candidate.docx`
+- `draft/revised/anisoNET_GPB_supplementary_tables_submission_candidate.xlsx`
 - `draft/revised/response_to_reviewers_working_draft.docx`
+- `codexAnalysis/manuscript_figures/supplementary_final_candidate`
 
 ## Reproduction Notes
 
@@ -188,6 +218,7 @@ Added 2026-06-09:
 - `codexAnalysis/reproducibility_package/repository_manifest.md`
 - `codexAnalysis/reproducibility_package/data_and_code_availability.md`
 - `codexAnalysis/reproducibility_package/zenodo_release_checklist.md`
+- `codexAnalysis/reproducibility_package/submission_release_decision.md`
 - `Script/configs/anisonet_datasets.example.json`
 
 Current release cleanup target:

@@ -24,13 +24,15 @@ Lightweight derived outputs:
 
 - supplementary table CSV files;
 - metric summary CSV files used by final figures;
-- `CURRENT_PANEL_SET.md` files for Figures 1-5.
+- `CURRENT_PANEL_SET.md` files for Figures 1-5;
+- final-candidate supplementary figure legends and source maps.
 
 ## Include In Zenodo
 
 - GitHub release source archive.
 - Final supplementary table workbook.
 - Final Figure 1-5 panel assets and assembled PDFs.
+- Final-candidate Supplementary Figure S1-S14 PDFs/PNGs.
 - Lightweight reviewer cache for exact figure-panel regeneration.
 - Optional selected NPY/JSON intermediate outputs for one representative rerun.
 

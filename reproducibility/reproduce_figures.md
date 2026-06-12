@@ -52,6 +52,27 @@ codexAnalysis/manuscript_figures/Figure5_cross_tissue_boundary
 
 Each directory contains a `CURRENT_PANEL_SET.md` file. Use that file, not older historical panel files in the same folder, to identify the current active panel set.
 
+## Supplementary Figure Candidate Set
+
+This command assembles Supplementary Figures S1-S14 from existing PNG assets. It does not rerun model fitting or recompute metrics. The working folder is provenance; the current submission-candidate copies are stored under `codexAnalysis/manuscript_figures/supplementary_final_candidate`.
+
+```powershell
+K:\software\miniconda\envs\scvi_env\python.exe Script\workflows\organize_supplementary_figures.py
+```
+
+Expected outputs:
+
+```text
+codexAnalysis/manuscript_figures/supplementary_working
+codexAnalysis/manuscript_figures/supplementary_final_candidate
+```
+
+The final-candidate folder was prepared with:
+
+```powershell
+K:\software\miniconda\envs\scvi_env\python.exe Script\workflows\prepare_gpb_submission_admin_package.py
+```
+
 ## Selected Single-Sample Model Rerun
 
 This route checks the core workflow without rerunning the full manuscript.

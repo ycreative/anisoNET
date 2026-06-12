@@ -13,13 +13,14 @@ import pandas as pd
 from matplotlib import gridspec
 from matplotlib.patches import Circle, Ellipse, FancyArrowPatch, Polygon, Rectangle
 from PIL import Image
+from scipy.ndimage import gaussian_filter
 
 
 PROJECT_ROOT = Path(os.environ.get("ANISONET_PROJECT_ROOT", Path(__file__).resolve().parents[2]))
 ROOT = Path(os.environ.get("ANISONET_ANALYSIS_ROOT", PROJECT_ROOT / "codexAnalysis"))
 OUT_DIR = ROOT / "manuscript_figures" / "Figure1_method_overview"
 SOURCE_ASSET_DIR = OUT_DIR / "source_assets"
-D_SCHEMATIC_ASSET = "Fig1D_continuous_resistance_field_schematic_v4.png"
+D_SCHEMATIC_ASSET = "Fig1D_continuous_resistance_field_schematic_v6.png"
 
 SAMPLE = "GSM5773457_Old_mouse_brain_A1-2"
 TASK = "Apoe_CNS_Myelin"
@@ -103,6 +104,17 @@ def norm_panel(arr: np.ndarray, mask: np.ndarray | None = None, *, log: bool = F
     return out
 
 
+def smooth_masked_display(panel: np.ndarray, mask: np.ndarray, sigma: float) -> np.ndarray:
+    valid = mask & np.isfinite(panel)
+    if not np.any(valid):
+        return panel
+    values = np.where(valid, panel, 0.0)
+    weights = valid.astype(float)
+    smooth = gaussian_filter(values, sigma=sigma, mode="nearest")
+    norm = gaussian_filter(weights, sigma=sigma, mode="nearest")
+    return np.where(mask, smooth / np.maximum(norm, 1e-6), np.nan)
+
+
 def crop_slices(mask: np.ndarray, pad: int = 6) -> tuple[slice, slice]:
     yy, xx = np.where(mask)
     if yy.size == 0:
@@ -130,9 +142,13 @@ def show_grid(
     rectangle: tuple[int, int, int, int] | None = None,
     title_fontsize: float = 7.2,
     title_pad: float = 2,
+    display_smooth_sigma: float | None = None,
 ) -> None:
-    panel = crop_to_mask(norm_panel(arr, mask, log=log), mask)
-    ax.imshow(panel, cmap=cmap, interpolation="bilinear", origin="lower")
+    data = norm_panel(arr, mask, log=log)
+    if display_smooth_sigma is not None and display_smooth_sigma > 0:
+        data = smooth_masked_display(data, mask, display_smooth_sigma)
+    panel = crop_to_mask(data, mask)
+    ax.imshow(panel, cmap=cmap, interpolation="bicubic", origin="lower")
     if rectangle is not None:
         ys, xs = crop_slices(mask)
         y0, y1, x0, x1 = rectangle
@@ -225,11 +241,22 @@ def weighted_region_ellipse(
     return ellipse
 
 
-def show_zoom(ax: plt.Axes, arr: np.ndarray, mask: np.ndarray, bounds: tuple[int, int, int, int], title: str, cmap: str) -> None:
+def show_zoom(
+    ax: plt.Axes,
+    arr: np.ndarray,
+    mask: np.ndarray,
+    bounds: tuple[int, int, int, int],
+    title: str,
+    cmap: str,
+    *,
+    display_smooth_sigma: float | None = None,
+) -> None:
     y0, y1, x0, x1 = bounds
     sub_mask = mask[y0:y1, x0:x1]
     sub = norm_panel(arr[y0:y1, x0:x1], sub_mask)
-    ax.imshow(sub, cmap=cmap, interpolation="nearest", origin="lower")
+    if display_smooth_sigma is not None and display_smooth_sigma > 0:
+        sub = smooth_masked_display(sub, sub_mask, display_smooth_sigma)
+    ax.imshow(sub, cmap=cmap, interpolation="bicubic", origin="lower")
     ax.set_title(title, fontsize=6.9, pad=1.5)
     ax.set_xticks([])
     ax.set_yticks([])
@@ -298,21 +325,36 @@ def fig1a_data_and_task_definition(data: dict[str, np.ndarray]) -> None:
 
     ax4 = fig.add_subplot(gs[0, 3])
     ax4.axis("off")
-    ax4.set_title("Resistance-constrained task", fontsize=8.2, fontweight="bold", pad=3)
-    ax4.add_patch(Rectangle((0.10, 0.18), 0.80, 0.66, facecolor="#f7f7f5", edgecolor="#b6b6b6", linewidth=0.5))
-    for radius, alpha in [(0.25, 0.10), (0.19, 0.16), (0.13, 0.24)]:
-        ax4.add_patch(Circle((0.42, 0.50), radius, facecolor="#d94841", edgecolor="none", alpha=alpha))
-    resistance_patches = [
-        (0.32, 0.39, 0.15, 0.07, 26),
-        (0.53, 0.56, 0.17, 0.08, -18),
-        (0.62, 0.33, 0.12, 0.06, 14),
+    ax4.set_title("Spot-level field step", fontsize=8.2, fontweight="bold", pad=3)
+    ax4.add_patch(Rectangle((0.10, 0.18), 0.80, 0.66, facecolor="#f8f8f4", edgecolor="#b6b6b6", linewidth=0.5))
+    ax4.add_patch(Ellipse((0.51, 0.52), 0.66, 0.45, angle=-5, facecolor="#efe8dd", edgecolor="#c8c0b6", linewidth=0.45, alpha=0.92))
+    ax4.add_patch(Ellipse((0.52, 0.52), 0.50, 0.32, angle=-5, facecolor="#f8dfd5", edgecolor="none", alpha=0.72))
+
+    spot_xy = [
+        (0.30, 0.38), (0.43, 0.38), (0.56, 0.38), (0.69, 0.38),
+        (0.24, 0.50), (0.37, 0.50), (0.50, 0.50), (0.63, 0.50), (0.76, 0.50),
+        (0.30, 0.62), (0.43, 0.62), (0.56, 0.62), (0.69, 0.62),
     ]
-    for cx, cy, w0, h0, angle in resistance_patches:
-        ax4.add_patch(Ellipse((cx, cy), w0, h0, angle=angle, facecolor="#2266aa", edgecolor="none", alpha=0.20))
-        ax4.add_patch(Ellipse((cx, cy), w0 * 0.55, h0 * 0.55, angle=angle, facecolor="#2266aa", edgecolor="none", alpha=0.28))
-    ax4.scatter([0.42, 0.68], [0.50, 0.45], s=[54, 38], c=["#d94841", "#7c8a99"], edgecolors="white", linewidths=0.6)
-    ax4.add_patch(FancyArrowPatch((0.46, 0.50), (0.66, 0.46), arrowstyle="-|>", mutation_scale=8, linewidth=0.75, color="#7c8a99", linestyle="--", connectionstyle="arc3,rad=-0.25"))
-    ax4.text(0.15, 0.08, "Local resistance attenuates\nspread around the source.", fontsize=6.1, color="#263238")
+    source_pt = (0.37, 0.50)
+    barrier_pts = [(0.56, 0.62), (0.63, 0.50), (0.56, 0.38)]
+    allowed_edges = [(source_pt, (0.43, 0.62)), (source_pt, (0.50, 0.50)), (source_pt, (0.43, 0.38))]
+    blocked_edges = [(source_pt, (0.56, 0.62)), (source_pt, (0.63, 0.50))]
+    for start, end in allowed_edges:
+        ax4.add_patch(FancyArrowPatch(start, end, arrowstyle="-|>", mutation_scale=7.5, linewidth=0.75, color="#cf7d35", alpha=0.82, connectionstyle="arc3,rad=0.05", zorder=2))
+    for start, end in blocked_edges:
+        ax4.add_patch(FancyArrowPatch(start, end, arrowstyle="-|>", mutation_scale=7.0, linewidth=0.75, color="#7894ad", alpha=0.55, linestyle="--", connectionstyle="arc3,rad=-0.04", zorder=2))
+        mx, my = (start[0] * 0.42 + end[0] * 0.58), (start[1] * 0.42 + end[1] * 0.58)
+        ax4.plot([mx - 0.018, mx + 0.018], [my - 0.018, my + 0.018], color="#2266aa", linewidth=0.9, zorder=3)
+        ax4.plot([mx - 0.018, mx + 0.018], [my + 0.018, my - 0.018], color="#2266aa", linewidth=0.9, zorder=3)
+    for x0, y0 in spot_xy:
+        ax4.add_patch(Circle((x0, y0), 0.020, facecolor="white", edgecolor="#60717d", linewidth=0.55, zorder=4))
+    ax4.add_patch(Circle(source_pt, 0.026, facecolor="#d94841", edgecolor="white", linewidth=0.65, zorder=5))
+    for x0, y0 in barrier_pts:
+        ax4.add_patch(Circle((x0, y0), 0.026, facecolor="#2266aa", edgecolor="white", linewidth=0.65, zorder=5, alpha=0.90))
+    ax4.text(0.18, 0.77, "spots + source/barrier priors", fontsize=5.8, color="#263238")
+    ax4.text(0.23, 0.30, "allowed\nspread", fontsize=5.4, color="#b96522", ha="center")
+    ax4.text(0.69, 0.64, "attenuated\nby barrier", fontsize=5.4, color="#2266aa", ha="center")
+    ax4.text(0.18, 0.08, "Estimate the field on measured spots;\nbarriers damp local diffusion.", fontsize=5.9, color="#263238")
     save_panel(fig, "Fig1A_data_and_task_definition")
 
 
@@ -337,12 +379,12 @@ def fig1b_field_construction(data: dict[str, np.ndarray]) -> None:
         if i < len(steps) - 1:
             ax_flow.annotate("", xy=(x + 0.175, 0.49), xytext=(x + 0.152, 0.49), arrowprops={"arrowstyle": "-|>", "lw": 0.65, "color": "#263238"})
     axes = [fig.add_subplot(gs[1, i]) for i in range(5)]
-    show_grid(axes[0], data["source"], data["mask"], "source S\nApoe", "magma", title_fontsize=6.4, title_pad=1)
-    show_grid(axes[1], data["barrier"], data["mask"], "barrier B\nMbp/Plp1/Mobp", "YlOrBr", title_fontsize=6.4, title_pad=1)
-    show_grid(axes[2], data["resistance"], data["mask"], "resistance\nR=1/D", "viridis", log=True, title_fontsize=6.4, title_pad=1)
-    show_grid(axes[3], data["diffusion"], data["mask"], "scalar diffusion\nD(x,y)", "cividis", title_fontsize=6.4, title_pad=1)
+    show_grid(axes[0], data["source"], data["mask"], "source S\nApoe", "magma", title_fontsize=6.4, title_pad=1, display_smooth_sigma=5.0)
+    show_grid(axes[1], data["barrier"], data["mask"], "barrier B\nMbp/Plp1/Mobp", "YlOrBr", title_fontsize=6.4, title_pad=1, display_smooth_sigma=5.0)
+    show_grid(axes[2], data["resistance"], data["mask"], "resistance\nR=1/D", "viridis", log=True, title_fontsize=6.4, title_pad=1, display_smooth_sigma=5.0)
+    show_grid(axes[3], data["diffusion"], data["mask"], "scalar diffusion\nD(x,y)", "cividis", title_fontsize=6.4, title_pad=1, display_smooth_sigma=5.0)
     field_context = 0.66 * norm_panel(data["field_post"], data["mask"]) + 0.34 * norm_panel(data["barrier"], data["mask"])
-    show_grid(axes[4], field_context, data["mask"], "field-barrier\ncontext", "plasma", title_fontsize=6.4, title_pad=1)
+    show_grid(axes[4], field_context, data["mask"], "field-barrier\ncontext", "plasma", title_fontsize=6.4, title_pad=1, display_smooth_sigma=3.0)
     fig.suptitle("Field construction from expression, morphology, and marker priors", fontsize=8.8, fontweight="bold", y=1.01)
     save_panel(fig, "Fig1B_field_construction")
 
@@ -410,19 +452,19 @@ def fig1e_output_and_local_zoom(data: dict[str, np.ndarray]) -> None:
     gs = gridspec.GridSpec(2, 4, figure=fig, width_ratios=[1, 1, 1, 1.05], wspace=0.12, hspace=0.35)
     ax1 = fig.add_subplot(gs[0, 0])
     panel_label(ax1, "E", x=-0.15, y=1.12)
-    show_grid(ax1, data["source"], data["mask"], "Measured source", "magma", rectangle=bounds)
+    show_grid(ax1, data["source"], data["mask"], "Measured source", "magma", rectangle=bounds, display_smooth_sigma=5.0)
     ax2 = fig.add_subplot(gs[0, 1])
     show_grid(ax2, data["field_raw"], data["mask"], "PINN field", "viridis", rectangle=bounds)
     ax3 = fig.add_subplot(gs[0, 2])
     show_grid(ax3, data["field_masked"], data["mask"], "Tissue-masked field", "viridis", rectangle=bounds)
     ax4 = fig.add_subplot(gs[0, 3])
-    show_grid(ax4, data["barrier"], data["mask"], "Barrier context", "YlOrBr", rectangle=bounds)
+    show_grid(ax4, data["barrier"], data["mask"], "Barrier context", "YlOrBr", rectangle=bounds, display_smooth_sigma=5.0)
     z1 = fig.add_subplot(gs[1, 0])
-    show_zoom(z1, data["source"], data["mask"], bounds, "Zoom: source", "magma")
+    show_zoom(z1, data["source"], data["mask"], bounds, "Zoom: source", "magma", display_smooth_sigma=1.8)
     z2 = fig.add_subplot(gs[1, 1])
     show_zoom(z2, data["field_post"], data["mask"], bounds, "Zoom: inferred field", "viridis")
     z3 = fig.add_subplot(gs[1, 2])
-    show_zoom(z3, data["barrier"], data["mask"], bounds, "Zoom: barrier", "YlOrBr")
+    show_zoom(z3, data["barrier"], data["mask"], bounds, "Zoom: barrier", "YlOrBr", display_smooth_sigma=1.8)
     ax_note = fig.add_subplot(gs[1, 3])
     ax_note.axis("off")
     ax_note.add_patch(Rectangle((0.04, 0.14), 0.92, 0.72, facecolor="#f7f7f5", edgecolor="#b8b8b8", linewidth=0.45))

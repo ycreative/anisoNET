@@ -1,4 +1,4 @@
-"""Generate separated Figure 4 panel assets for robustness and resource evidence."""
+"""Generate separated Figure 4 panel assets for robustness and targeted-extension evidence."""
 
 from __future__ import annotations
 
@@ -17,6 +17,7 @@ from scipy.ndimage import gaussian_filter
 PROJECT_ROOT = Path(os.environ.get("ANISONET_PROJECT_ROOT", Path(__file__).resolve().parents[2]))
 ROOT = Path(os.environ.get("ANISONET_ANALYSIS_ROOT", PROJECT_ROOT / "codexAnalysis"))
 OUT_DIR = ROOT / "manuscript_figures" / "Figure4_robustness_reproducibility"
+EXPORT_DPI = 600
 
 SPATIAL_ROOT = ROOT / "processed_visium" / "brain_aging_gse193107"
 PREFLIGHT_ROOT = ROOT / "preflight" / "brain_aging_gse193107"
@@ -24,7 +25,9 @@ HISTO = ROOT / "histology_prior" / "brain_aging_gse193107" / "histology_prior_pi
 LOW_PDE = ROOT / "loss_weight_sensitivity" / "brain_aging_gse193107" / "multi_section_low_pde" / "low_pde_profile_validation_group_summary.csv"
 SEED = ROOT / "loss_weight_sensitivity" / "brain_aging_gse193107" / "low_pde_seed_stability" / "low_pde_seed_stability_paired_summary.csv"
 CLIP = ROOT / "source_clipping_sensitivity" / "brain_aging_gse193107" / "GSM5773457_Old_mouse_brain_A1-2" / "source_clipping_sensitivity_summary.csv"
-RESOURCE = ROOT / "resource_profile" / "brain_aging_gse193107" / "GSM5773457_Old_mouse_brain_A1-2" / "anisonet_resource_profile_comparison.csv"
+TARGETED_DATASET = ROOT / "targeted_gene_extension" / "full_metrics_by_dataset.csv"
+TARGETED_DATASET_GENE = ROOT / "targeted_gene_extension" / "full_metrics_by_dataset_gene.csv"
+TARGETED_FULL = ROOT / "targeted_gene_extension" / "full_metrics_summary.csv"
 
 HISTO_REP_SAMPLE = "GSM5773457_Old_mouse_brain_A1-2"
 HISTO_REP_TASK = "Apoe_CNS_Myelin"
@@ -64,6 +67,18 @@ COLORS = {
     "default": PAPER_COLORS["slate"],
     "low_pde": PAPER_COLORS["teal"],
 }
+DATASET_LABELS = {
+    "brain_aging_gse193107": "Brain aging",
+    "mouse_brain_sagittal_10x": "Sagittal brain",
+    "mouse_kidney_10x": "Kidney",
+    "mouse_liver_apap_gse280515": "Liver APAP",
+}
+DATASET_COLORS = {
+    "brain_aging_gse193107": PAPER_COLORS["blue"],
+    "mouse_brain_sagittal_10x": PAPER_COLORS["lavender"],
+    "mouse_kidney_10x": PAPER_COLORS["teal"],
+    "mouse_liver_apap_gse280515": PAPER_COLORS["terracotta"],
+}
 
 
 def setup() -> None:
@@ -91,17 +106,25 @@ def ensure_dir(path: Path) -> None:
 
 def save_panel(fig: plt.Figure, stem: str) -> None:
     ensure_dir(OUT_DIR)
-    fig.savefig(OUT_DIR / f"{stem}.png", dpi=600, bbox_inches="tight")
-    fig.savefig(OUT_DIR / f"{stem}.pdf", bbox_inches="tight")
+    fig.savefig(OUT_DIR / f"{stem}.png", dpi=EXPORT_DPI, bbox_inches="tight")
+    fig.savefig(OUT_DIR / f"{stem}.pdf", dpi=EXPORT_DPI, bbox_inches="tight")
     plt.close(fig)
 
 
 def panel_label(ax: plt.Axes, label: str, x: float = -0.13, y: float = 1.10) -> None:
-    return None
+    # Panel letters are added manually during Inkscape layout.
+    return
 
 
 def clean_field(value: str) -> str:
     return {"gauss07": "post", "masked": "mask"}.get(value, value)
+
+
+def brain_sample_label(sample: str) -> str:
+    condition = "Y" if "_Young_" in sample else "O"
+    section = sample.split("_brain_")[-1]
+    gsm = sample.split("_")[0].replace("GSM577", "G")
+    return f"{condition} {section}\n{gsm}"
 
 
 def crop_to_mask(arr: np.ndarray, mask: np.ndarray, pad: int = 5) -> np.ndarray:
@@ -273,6 +296,32 @@ def compact_slope_axis(
     ax.tick_params(axis="x", labelsize=6.2)
 
 
+def paired_metric_axis(
+    ax: plt.Axes,
+    labels: list[str],
+    left_values: list[float],
+    right_values: list[float],
+    left_label: str,
+    right_label: str,
+    ylabel: str,
+    *,
+    color_left: str = PAPER_COLORS["blue"],
+    color_right: str = PAPER_COLORS["lavender"],
+) -> None:
+    x = np.arange(len(labels))
+    for xi, lv, rv in zip(x, left_values, right_values):
+        ax.plot([xi, xi], [lv, rv], color="#9aa1a8", linewidth=0.9, zorder=1)
+        ax.scatter(xi - 0.055, lv, s=22, color=color_left, edgecolor="#333333", linewidth=0.35, zorder=2)
+        ax.scatter(xi + 0.055, rv, s=22, color=color_right, edgecolor="#333333", linewidth=0.35, zorder=2)
+    ax.set_xticks(x)
+    ax.set_xticklabels(labels, fontsize=6.4)
+    ax.set_ylabel(ylabel, fontsize=6.5)
+    ax.grid(axis="y", color="#dddddd", linewidth=0.45, alpha=0.75)
+    ax.tick_params(axis="y", labelsize=6.0)
+    for spine in ["top", "right"]:
+        ax.spines[spine].set_visible(False)
+
+
 def show_he_with_spots(ax: plt.Axes, sample: str, coords_norm: np.ndarray, title: str) -> None:
     image_path = SPATIAL_ROOT / sample / "spatial" / "tissue_hires_image.png"
     image = Image.open(image_path).convert("RGB")
@@ -340,8 +389,8 @@ def fig4a_spatial_prior_comparison() -> None:
     axes = [fig.add_subplot(gs[i // 4, i % 4]) for i in range(8)]
     panel_label(axes[0], "A", x=-0.18, y=1.12)
     show_he_with_spots(axes[0], HISTO_REP_SAMPLE, coords, "H&E + spots")
-    show_spot_field(axes[1], HISTO_REP_SAMPLE, coords, source, mask, "Apoe source", "magma")
-    show_spot_field(axes[2], HISTO_REP_SAMPLE, coords, barrier, mask, "CNS-myelin barrier", "YlOrBr")
+    show_grid(axes[1], source, mask, "Apoe source", "magma", display_smooth_sigma=5.0)
+    show_grid(axes[2], barrier, mask, "CNS-myelin barrier", "YlOrBr", display_smooth_sigma=5.0)
     show_grid(axes[3], bright_res, mask, "Brightness\nstructural prior", "viridis")
     show_grid(axes[4], hema_res, mask, "Hematoxylin\nstructural prior", "viridis")
     show_grid(axes[5], bright_field, mask, "Brightness-prior\nfield", "plasma")
@@ -366,8 +415,8 @@ def fig4b_spatial_profile_sensitivity() -> None:
     gs = gridspec.GridSpec(1, 6, figure=fig, wspace=0.08)
     axes = [fig.add_subplot(gs[0, i]) for i in range(6)]
     panel_label(axes[0], "B", x=-0.20, y=1.11)
-    show_spot_field(axes[0], LOWPDE_REP_SAMPLE, coords, source, mask, "Apoe source", "magma")
-    show_spot_field(axes[1], LOWPDE_REP_SAMPLE, coords, barrier, mask, "CNS-myelin\nbarrier", "YlOrBr")
+    show_grid(axes[0], source, mask, "Apoe source", "magma", display_smooth_sigma=5.0)
+    show_grid(axes[1], barrier, mask, "CNS-myelin\nbarrier", "YlOrBr", display_smooth_sigma=5.0)
     show_grid(axes[2], default, mask, "Default\nfield", "plasma")
     show_grid(axes[3], low_pde, mask, "Low-PDE\nfield", "plasma")
     show_grid(axes[4], delta, mask, "Low-PDE -\ndefault", "coolwarm", diverging=True)
@@ -376,55 +425,45 @@ def fig4b_spatial_profile_sensitivity() -> None:
     save_panel(fig, "Fig4B_spatial_low_pde_profile_sensitivity")
 
 
-def fig4c_histology_prior() -> None:
-    df = pd.read_csv(HISTO)
-    summary = df[df["field_type"].eq("gauss07")].copy()
-    bright = HISTO_REP_ROOT / "brightness"
-    mask = np.load(bright / "tissue_mask.npy") > 0
-    bright_field = np.load(HISTO_REP_ROOT / "brightness_pinn" / "pinn_grid_prediction_postprocessed.npy")
-    hema_field = np.load(HISTO_REP_ROOT / "hematoxylin_pinn" / "pinn_grid_prediction_postprocessed.npy")
-    delta = hema_field - bright_field
-
-    fig = plt.figure(figsize=(8.7, 2.55))
-    gs = gridspec.GridSpec(1, 5, figure=fig, width_ratios=[1.05, 1.05, 1.05, 1.25, 1.25], wspace=0.22)
-    axes = [fig.add_subplot(gs[0, i]) for i in range(3)]
-    ax_p = fig.add_subplot(gs[0, 3])
-    ax_r = fig.add_subplot(gs[0, 4])
-    panel_label(axes[0], "C", x=-0.20, y=1.10)
-    show_grid(axes[0], bright_field, mask, "Brightness-prior\nfield", "plasma")
-    show_grid(axes[1], hema_field, mask, "Hematoxylin-prior\nfield", "plasma")
-    show_grid(axes[2], delta, mask, "Field delta", "coolwarm", diverging=True)
-
-    genes = ["Apoe", "Gfap"]
-    b = summary[summary["histology_prior"].eq("brightness")].set_index("target_gene").loc[genes]
-    h = summary[summary["histology_prior"].eq("hematoxylin")].set_index("target_gene").loc[genes]
-    compact_slope_axis(
-        ax_p,
-        genes,
-        b["spot_pearson_source_mean"].tolist(),
-        h["spot_pearson_source_mean"].tolist(),
-        "Bright",
-        "Hema",
-        "Pearson",
-    )
-    compact_slope_axis(
-        ax_r,
-        genes,
-        b["roughness_grad_p95_mean"].tolist(),
-        h["roughness_grad_p95_mean"].tolist(),
-        "Bright",
-        "Hema",
-        "Gradient p95",
-    )
-    ax_p.set_title("Source fidelity", fontsize=7.5)
-    ax_r.set_title("Roughness", fontsize=7.5)
-    handles = [
-        mpl.lines.Line2D([0], [0], marker="o", linestyle="none", markerfacecolor=PAPER_COLORS["blue"], markeredgecolor=PAPER_COLORS["dark"], markersize=4.5),
-        mpl.lines.Line2D([0], [0], marker="o", linestyle="none", markerfacecolor=PAPER_COLORS["lavender"], markeredgecolor=PAPER_COLORS["dark"], markersize=4.5),
+def fig4c_targeted_extension_multigene() -> None:
+    gene_df = pd.read_csv(TARGETED_DATASET_GENE).copy()
+    examples = [
+        ("Brain\nC1qa", "brain_aging_gse193107", "GSM5773457_Old_mouse_brain_A1-2", "C1qa_CNS_Myelin"),
+        ("Brain\nTyrobp", "brain_aging_gse193107", "GSM5773457_Old_mouse_brain_A1-2", "Tyrobp_CNS_Myelin"),
+        ("Brain\nTrem2", "brain_aging_gse193107", "GSM5773457_Old_mouse_brain_A1-2", "Trem2_CNS_Myelin"),
+        ("Brain\nAif1", "brain_aging_gse193107", "GSM5773457_Old_mouse_brain_A1-2", "Aif1_CNS_Myelin"),
     ]
-    fig.legend(handles, ["Brightness", "Hematoxylin"], frameon=False, ncol=2, fontsize=6.4, loc="upper center", bbox_to_anchor=(0.71, 0.93))
-    fig.suptitle("Histology-prior robustness: spatial fields first, compact metrics second", fontsize=8.8, fontweight="bold", y=1.04)
-    save_panel(fig, "Fig4C_histology_prior_metric_summary")
+
+    fig = plt.figure(figsize=(7.85, 2.85))
+    gs = gridspec.GridSpec(1, 5, figure=fig, width_ratios=[1, 1, 1, 1, 1.75], wspace=0.38)
+    map_axes = [fig.add_subplot(gs[0, i]) for i in range(4)]
+    ax_brain = fig.add_subplot(gs[0, 4])
+    panel_label(map_axes[0], "C", x=-0.20, y=1.10)
+
+    for ax, (title, dataset, sample, task) in zip(map_axes, examples):
+        preflight = ROOT / "targeted_gene_extension" / "preflight" / dataset / sample / task / "brightness"
+        pinn = ROOT / "targeted_gene_extension" / "pinn" / dataset / sample / task / "fourier_refined_low_pde_16g_gauss07"
+        mask = np.load(preflight / "tissue_mask.npy") > 0
+        field = np.load(pinn / "pinn_grid_prediction_postprocessed.npy")
+        show_grid(ax, field, mask, title, "plasma")
+
+    brain = gene_df[gene_df["dataset"].eq("brain_aging_gse193107")].sort_values("spot_pearson_source_mean", ascending=True)
+    y = np.arange(len(brain))
+    for yi, row in zip(y, brain.itertuples(index=False)):
+        color = PAPER_COLORS["blue"] if row.target_gene in {"Apoe", "Gfap"} else PAPER_COLORS["teal"]
+        ax_brain.plot([row.spot_pearson_source_min, row.spot_pearson_source_max], [yi, yi], color=color, linewidth=2.0, alpha=0.25)
+        ax_brain.plot([0.55, row.spot_pearson_source_mean], [yi, yi], color=color, linewidth=1.25, alpha=0.78)
+        ax_brain.scatter(row.spot_pearson_source_mean, yi, s=24, color=color, edgecolor=PAPER_COLORS["dark"], linewidth=0.35, zorder=3)
+    ax_brain.axvline(0.55, color="#777777", linewidth=0.55, linestyle=":")
+    ax_brain.set_yticks(y)
+    ax_brain.set_yticklabels(brain["target_gene"], fontsize=5.8)
+    ax_brain.set_xlim(0.55, 0.90)
+    ax_brain.set_xlabel("Source Pearson", fontsize=6.4)
+    ax_brain.set_title("Brain aging targeted extension\n8 genes x 8 sections", fontsize=7.3)
+    ax_brain.grid(axis="x", color="#dddddd", linewidth=0.45, alpha=0.75)
+    ax_brain.tick_params(axis="x", labelsize=5.7)
+    fig.suptitle("Primary brain targeted gene extension: added spatial tasks and fitted-source QC", fontsize=8.8, fontweight="bold", y=1.03)
+    save_panel(fig, "Fig4C_targeted_extension_multigene_spatial_summary")
 
 
 def fig4b_low_pde_profile() -> None:
@@ -438,8 +477,8 @@ def fig4b_low_pde_profile() -> None:
     spatial_delta = low_pde - default
     bounds = zoom_bounds_from_peak(spatial_delta, mask, window=50)
 
-    fig = plt.figure(figsize=(8.8, 2.85))
-    gs = gridspec.GridSpec(2, 6, figure=fig, width_ratios=[1, 1, 1, 1, 1.35, 1.35], wspace=0.18, hspace=0.18)
+    fig = plt.figure(figsize=(8.9, 3.05))
+    gs = gridspec.GridSpec(2, 6, figure=fig, width_ratios=[1, 1, 1, 0.95, 1.18, 1.18], wspace=0.26, hspace=0.24)
     axes = [fig.add_subplot(gs[0, i]) for i in range(3)]
     axes.append(fig.add_subplot(gs[0, 3], projection="3d"))
     zoom_axes = [fig.add_subplot(gs[1, i]) for i in range(4)]
@@ -455,10 +494,10 @@ def fig4b_low_pde_profile() -> None:
     show_grid_zoom(zoom_axes[2], spatial_delta, mask, bounds, "Delta zoom", "coolwarm", diverging=True)
     zoom_axes[3].axis("off")
     zoom_axes[3].text(
-        0.0,
-        0.72,
-        "Local inset highlights\nwhere the profile change\nis spatially concentrated.",
-        fontsize=6.8,
+        0.03,
+        0.78,
+        "Local inset:\nprofile change is\nspatially concentrated.",
+        fontsize=6.1,
         color="#35424d",
         ha="left",
         va="top",
@@ -475,6 +514,7 @@ def fig4b_low_pde_profile() -> None:
     ax_metric.set_xlabel("Delta Pearson", fontsize=6.7)
     ax_metric.set_title("Source-fit gain", fontsize=7.4)
     ax_metric.grid(axis="x", color="#dddddd", linewidth=0.45, alpha=0.75)
+    ax_metric.tick_params(axis="y", pad=1)
 
     ax_trade.axvline(0, color="#333333", linewidth=0.55)
     for yi, mse, rough in zip(y, delta["spot_mse_source_mean"], delta["roughness_grad_p95_mean"]):
@@ -484,7 +524,7 @@ def fig4b_low_pde_profile() -> None:
     ax_trade.set_yticklabels([])
     ax_trade.set_xlabel("Delta value", fontsize=6.7)
     ax_trade.set_title("Trade-off", fontsize=7.4)
-    ax_trade.legend(frameon=False, fontsize=6.0, loc="lower right")
+    ax_trade.legend(frameon=False, fontsize=5.8, loc="upper right", bbox_to_anchor=(1.02, 1.02), borderaxespad=0)
     ax_trade.grid(axis="x", color="#dddddd", linewidth=0.45, alpha=0.75)
     fig.suptitle("Low-PDE profile: local spatial differences with compact metric deltas", fontsize=8.8, fontweight="bold", y=1.03)
     save_panel(fig, "Fig4D_low_pde_profile_delta")
@@ -492,7 +532,8 @@ def fig4b_low_pde_profile() -> None:
 
 def fig4c_source_clipping() -> None:
     df = pd.read_csv(CLIP)
-    fig, axes = plt.subplots(1, 2, figsize=(7.4, 2.55), sharey=False)
+    fig, axes = plt.subplots(2, 1, figsize=(2.55, 5.15), sharex=True, sharey=False)
+    fig.subplots_adjust(left=0.27, right=0.97, top=0.88, bottom=0.12, hspace=0.38)
     for ax, gene in zip(axes, ["Apoe", "Gfap"]):
         sub = df[df["target_gene"].eq(gene)]
         for field_type in ["masked", "gauss07"]:
@@ -506,11 +547,27 @@ def fig4c_source_clipping() -> None:
                 color=COLORS[field_type],
                 label=clean_field(field_type),
             )
-        ax.set_title(gene, fontsize=8.2)
-        ax.set_xlabel("Training source clipping percentile")
-        ax.set_ylabel("Spot-source Pearson")
+        y_values = sub["spot_pearson_source"].to_numpy(dtype=float)
+        y_pad = max((np.nanmax(y_values) - np.nanmin(y_values)) * 0.20, 0.001)
+        ax.set_ylim(np.nanmin(y_values) - y_pad, np.nanmax(y_values) + y_pad)
+        ax.set_title(gene, fontsize=8.1, loc="left", pad=2)
+        ax.set_ylabel("Spot-source\nPearson", fontsize=6.8)
         ax.grid(color="#dddddd", linewidth=0.45, alpha=0.75)
-    axes[0].legend(frameon=False, loc="lower left")
+        ax.yaxis.set_major_locator(mpl.ticker.MaxNLocator(4))
+        ax.tick_params(axis="both", labelsize=6.4, pad=1)
+    axes[-1].set_xticks([95, 97.5, 99, 99.5])
+    axes[-1].set_xticklabels(["95", "97.5", "99", "99.5"])
+    axes[-1].set_xlabel("Training source\nclipping percentile", fontsize=6.8)
+    axes[0].legend(
+        frameon=False,
+        loc="upper center",
+        bbox_to_anchor=(0.52, 1.32),
+        ncol=2,
+        fontsize=6.2,
+        handlelength=1.7,
+        columnspacing=0.9,
+    )
+    fig.suptitle("Source clipping sensitivity", x=0.27, y=0.99, ha="left", fontsize=8.4, fontweight="bold")
     panel_label(axes[0], "E")
     save_panel(fig, "Fig4E_source_clipping_sensitivity")
 
@@ -557,46 +614,75 @@ def fig4d_seed_stability() -> None:
     save_panel(fig, "Fig4F_seed_stability")
 
 
-def fig4e_resource_profile() -> None:
-    df = pd.read_csv(RESOURCE)
-    labels = df["profile"].str.replace("fourier_refined_", "", regex=False).str.replace("_16g", "", regex=False)
-    x = np.arange(len(df))
-    preflight = PREFLIGHT_ROOT / HISTO_REP_SAMPLE / HISTO_REP_TASK
-    mask = np.load(preflight / "tissue_mask.npy") > 0
-    coords = np.load(preflight / "coords_norm.npy")
-    source = np.load(preflight / "source_grid.npy")
+def fig4g_targeted_extension_spatial_metrics() -> None:
+    full = pd.read_csv(TARGETED_FULL).copy()
+    brain = full[full["dataset"].eq("brain_aging_gse193107")].copy()
+    sample_order = list(dict.fromkeys(brain["sample"]))
+    sample_summary = (
+        brain.groupby("sample", as_index=False)
+        .agg(
+            n_genes=("target_gene", "nunique"),
+            source_mean=("spot_pearson_source", "mean"),
+            source_min=("spot_pearson_source", "min"),
+            source_max=("spot_pearson_source", "max"),
+            rough_mean=("roughness_grad_p95", "mean"),
+            rough_min=("roughness_grad_p95", "min"),
+            rough_max=("roughness_grad_p95", "max"),
+        )
+        .set_index("sample")
+        .loc[sample_order]
+        .reset_index()
+    )
+    sample_summary["label"] = [brain_sample_label(sample) for sample in sample_summary["sample"]]
+    examples = [
+        ("Old A1\nApoe", "GSM5773457_Old_mouse_brain_A1-2", "Apoe_CNS_Myelin"),
+        ("Old A1\nGfap", "GSM5773457_Old_mouse_brain_A1-2", "Gfap_CNS_Myelin"),
+        ("Old A1\nCst3", "GSM5773457_Old_mouse_brain_A1-2", "Cst3_CNS_Myelin"),
+        ("Old A1\nLpl", "GSM5773457_Old_mouse_brain_A1-2", "Lpl_CNS_Myelin"),
+    ]
 
-    fig = plt.figure(figsize=(8.2, 2.45))
-    gs = gridspec.GridSpec(1, 5, figure=fig, width_ratios=[1.05, 1.05, 1.2, 1.15, 1.15], wspace=0.30)
-    ax_he = fig.add_subplot(gs[0, 0])
-    ax_source = fig.add_subplot(gs[0, 1])
-    ax_surface = fig.add_subplot(gs[0, 2], projection="3d")
-    ax_time = fig.add_subplot(gs[0, 3])
-    ax_mem = fig.add_subplot(gs[0, 4])
-    panel_label(ax_he, "G", x=-0.22, y=1.10)
-    show_he_with_spots(ax_he, HISTO_REP_SAMPLE, coords, "Profiled\nsection")
-    show_spot_field(ax_source, HISTO_REP_SAMPLE, coords, source, mask, "Apoe source\nfield object", "magma")
-    show_surface(ax_surface, source, mask, "3D source\nheight")
+    fig = plt.figure(figsize=(9.85, 2.62))
+    gs = gridspec.GridSpec(1, 6, figure=fig, width_ratios=[1, 1, 1, 0.95, 1.58, 1.22], wspace=0.58)
+    map_axes = [fig.add_subplot(gs[0, i]) for i in range(4)]
+    ax_p = fig.add_subplot(gs[0, 4])
+    ax_r = fig.add_subplot(gs[0, 5])
+    panel_label(map_axes[0], "G", x=-0.20, y=1.10)
 
-    colors = [PAPER_COLORS["slate"], PAPER_COLORS["teal"]]
-    for ax, metric, title, xlabel in [
-        (ax_time, "mean_elapsed_seconds", "Runtime", "Seconds"),
-        (ax_mem, "mean_peak_cuda_reserved_gb", "Memory", "CUDA GB"),
-    ]:
-        y = np.arange(len(df))[::-1]
-        vals = df[metric].to_numpy()
-        for yi, val, color in zip(y, vals, colors):
-            ax.plot([0, val], [yi, yi], color=color, linewidth=1.25, alpha=0.95, zorder=2)
-            ax.scatter(val, yi, s=34, color=color, edgecolor=PAPER_COLORS["dark"], linewidth=0.36, zorder=3)
-        ax.set_xlim(0, max(vals) * 1.08)
-        ax.set_yticks(y)
-        ax.set_yticklabels(labels, fontsize=6.2)
-        ax.set_xlabel(xlabel, fontsize=6.7)
-        ax.set_title(title, fontsize=7.5)
-        ax.grid(axis="x", color="#dddddd", linewidth=0.45, alpha=0.75)
-        ax.tick_params(axis="x", labelsize=6.2)
-    fig.suptitle("Resource profile tied to the representative spatial inference object", fontsize=8.8, fontweight="bold", y=1.03)
-    save_panel(fig, "Fig4G_resource_profile")
+    for ax, (title, sample, task) in zip(map_axes, examples):
+        preflight = ROOT / "targeted_gene_extension" / "preflight" / "brain_aging_gse193107" / sample / task / "brightness"
+        pinn = ROOT / "targeted_gene_extension" / "pinn" / "brain_aging_gse193107" / sample / task / "fourier_refined_low_pde_16g_gauss07"
+        mask = np.load(preflight / "tissue_mask.npy") > 0
+        field = np.load(pinn / "pinn_grid_prediction_postprocessed.npy")
+        show_grid(ax, field, mask, title, "plasma")
+
+    y = np.arange(len(sample_summary))[::-1]
+    for yi, row in zip(y, sample_summary.itertuples(index=False)):
+        color = PAPER_COLORS["blue"] if "Young" in row.label else PAPER_COLORS["teal"]
+        ax_p.plot([row.source_min, row.source_max], [yi, yi], color=color, linewidth=2.0, alpha=0.24)
+        ax_p.plot([0.55, row.source_mean], [yi, yi], color=color, linewidth=1.15, alpha=0.78)
+        ax_p.scatter(row.source_mean, yi, s=26, color=color, edgecolor=PAPER_COLORS["dark"], linewidth=0.35, zorder=3)
+        ax_r.plot([row.rough_min, row.rough_max], [yi, yi], color=PAPER_COLORS["ochre"], linewidth=2.0, alpha=0.26)
+        ax_r.plot([0, row.rough_mean], [yi, yi], color=PAPER_COLORS["ochre"], linewidth=1.15, alpha=0.80)
+        ax_r.scatter(row.rough_mean, yi, s=26, color=PAPER_COLORS["ochre"], edgecolor=PAPER_COLORS["dark"], linewidth=0.35, zorder=3)
+
+    ax_p.axvline(0.55, color="#777777", linewidth=0.55, linestyle=":")
+    ax_p.set_xlim(0.55, 0.84)
+    ax_p.set_yticks(y)
+    ax_p.set_yticklabels(sample_summary["label"], fontsize=5.3)
+    ax_p.set_xlabel("Source Pearson", fontsize=6.4)
+    ax_p.set_title("Section source fidelity\n8 genes per section", fontsize=7.5)
+    ax_p.grid(axis="x", color="#dddddd", linewidth=0.45, alpha=0.75)
+    ax_p.tick_params(axis="x", labelsize=5.7)
+
+    ax_r.set_xlim(0, 0.34)
+    ax_r.set_yticks(y)
+    ax_r.set_yticklabels([])
+    ax_r.set_xlabel("Grad. p95", fontsize=6.4)
+    ax_r.set_title("Section roughness\nmean and range", fontsize=7.5)
+    ax_r.grid(axis="x", color="#dddddd", linewidth=0.45, alpha=0.75)
+    ax_r.tick_params(axis="x", labelsize=5.7)
+    fig.suptitle("Primary brain targeted extension: aligned representative fields and section-level QC", fontsize=8.6, fontweight="bold", y=1.03)
+    save_panel(fig, "Fig4G_targeted_extension_spatial_metrics")
 
 
 def fig4f_profile_decision() -> None:
@@ -606,19 +692,20 @@ def fig4f_profile_decision() -> None:
         ["Histology prior swap", "Robustness check", "Brightness and hematoxylin\nproduce similar summaries"],
         ["Source clipping", "Preprocessing check", "Stable across 95-99.5%\nsource caps"],
     ]
-    fig, ax = plt.subplots(figsize=(7.4, 2.7))
+    fig, ax = plt.subplots(figsize=(6.8, 1.82))
     ax.axis("off")
     table = ax.table(
         cellText=rows,
         colLabels=["Component", "Figure role", "Interpretation"],
         cellLoc="left",
         colLoc="left",
-        loc="center",
-        colWidths=[0.25, 0.24, 0.51],
+        loc="upper center",
+        bbox=[0.0, 0.02, 1.0, 0.78],
+        colWidths=[0.24, 0.24, 0.52],
     )
     table.auto_set_font_size(False)
-    table.set_fontsize(7.2)
-    table.scale(1, 1.42)
+    table.set_fontsize(6.4)
+    table.scale(1, 1.08)
     for (row, col), cell in table.get_celld().items():
         cell.set_linewidth(0.45)
         cell.set_edgecolor("#cccccc")
@@ -627,7 +714,7 @@ def fig4f_profile_decision() -> None:
             cell.set_text_props(weight="bold")
         elif row % 2 == 0:
             cell.set_facecolor("#f8f9fa")
-    ax.set_title("Recommended robustness narrative", fontsize=8.6, loc="left", pad=10)
+    ax.set_title("Recommended robustness narrative", fontsize=8.0, loc="left", pad=1)
     save_panel(fig, "Fig4H_profile_decision_table")
 
 
@@ -635,11 +722,11 @@ def rough_assembly() -> None:
     stems = [
         "Fig4A_spatial_histology_prior_comparison",
         "Fig4B_spatial_low_pde_profile_sensitivity",
-        "Fig4C_histology_prior_metric_summary",
+        "Fig4C_targeted_extension_multigene_spatial_summary",
         "Fig4D_low_pde_profile_delta",
         "Fig4E_source_clipping_sensitivity",
         "Fig4F_seed_stability",
-        "Fig4G_resource_profile",
+        "Fig4G_targeted_extension_spatial_metrics",
         "Fig4H_profile_decision_table",
     ]
     imgs = [Image.open(OUT_DIR / f"{stem}.png").convert("RGB") for stem in stems]
@@ -661,8 +748,8 @@ def rough_assembly() -> None:
             canvas.paste(thumbs[idx], (x, y))
             x += thumb_w + gutter
         y += row_heights[r] + gutter
-    canvas.save(OUT_DIR / "Figure4_rough_assembly.png", dpi=(300, 300))
-    canvas.save(OUT_DIR / "Figure4_rough_assembly.pdf", resolution=300)
+    canvas.save(OUT_DIR / "Figure4_rough_assembly.png", dpi=(EXPORT_DPI, EXPORT_DPI))
+    canvas.save(OUT_DIR / "Figure4_rough_assembly.pdf", resolution=EXPORT_DPI)
 
 
 def main() -> None:
@@ -670,11 +757,11 @@ def main() -> None:
     ensure_dir(OUT_DIR)
     fig4a_spatial_prior_comparison()
     fig4b_spatial_profile_sensitivity()
-    fig4c_histology_prior()
+    fig4c_targeted_extension_multigene()
     fig4b_low_pde_profile()
     fig4c_source_clipping()
     fig4d_seed_stability()
-    fig4e_resource_profile()
+    fig4g_targeted_extension_spatial_metrics()
     fig4f_profile_decision()
     rough_assembly()
     print(f"Wrote Figure 4 panel assets to {OUT_DIR}")

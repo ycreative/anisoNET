@@ -2,7 +2,28 @@
 
 Date: 2026-06-08
 
-This map assigns existing outputs to likely supplementary figures and tables. It is a working structure for manuscript assembly, not final numbering.
+This map assigns existing outputs to the current GPB supplementary materials package. Supplementary Figures S1-S14 are now locked as the final-candidate submission set unless the journal portal imposes a file-size limit or the authors decide to split files during upload.
+
+## Current Final-Candidate Supplementary Figure Folder
+
+Use this folder for submission-package assembly:
+
+- Directory: `codexAnalysis/manuscript_figures/supplementary_final_candidate`
+- Current set: `codexAnalysis/manuscript_figures/supplementary_final_candidate/CURRENT_SUPPLEMENTARY_FIGURE_SET.md`
+- Combined PDF: `codexAnalysis/manuscript_figures/supplementary_final_candidate/Supplementary_Figures_S1-S14_final_candidate.pdf`
+- Legends: `codexAnalysis/manuscript_figures/supplementary_final_candidate/supplementary_figure_legends_final_candidate.md`
+- Source map: `codexAnalysis/manuscript_figures/supplementary_final_candidate/supplementary_figure_source_map_final.csv`
+- Word legends: `draft/revised/anisoNET_GPB_supplementary_figure_legends_final_candidate.docx`
+
+The older working folder is retained only as provenance:
+
+- Directory: `codexAnalysis/manuscript_figures/supplementary_working`
+- Overview: `codexAnalysis/manuscript_figures/supplementary_working/Supplementary_Figure_Working_Overview.png`
+- Current set: `codexAnalysis/manuscript_figures/supplementary_working/CURRENT_SUPPLEMENTARY_FIGURE_SET.md`
+- Source map: `codexAnalysis/manuscript_figures/supplementary_working/supplementary_working_source_map.csv`
+- Script: `Script/workflows/organize_supplementary_figures.py`
+
+The working overview is not part of the final candidate set.
 
 ## Main Figures
 
@@ -17,7 +38,7 @@ Figure 1: Method overview.
 - Assets: `codexAnalysis/manuscript_figures/Figure1_method_overview`
 - Panel list: `codexAnalysis/manuscript_figures/Figure1_method_overview/CURRENT_PANEL_SET.md`
 
-Figure 2: Primary GSE193107 Apoe/Gfap application.
+Figure 2: Primary GSE193107 brain-aging multi-gene application.
 
 - Assets: `codexAnalysis/manuscript_figures/Figure2_gse193107_primary_application`
 - Panel list: `codexAnalysis/manuscript_figures/Figure2_gse193107_primary_application/CURRENT_PANEL_SET.md`
@@ -29,7 +50,7 @@ Figure 3: Benchmark and synthetic validation.
 - Panel list: `codexAnalysis/manuscript_figures/Figure3_benchmark_and_synthetic_validation/CURRENT_PANEL_SET.md`
 - Metric definitions: `codexAnalysis/barrier_metric_spec.md`
 
-Figure 4: Robustness, sensitivity, and computational profile.
+Figure 4: Robustness, sensitivity, and targeted extension.
 
 - Assets: `codexAnalysis/manuscript_figures/Figure4_robustness_reproducibility`
 - Panel list: `codexAnalysis/manuscript_figures/Figure4_robustness_reproducibility/CURRENT_PANEL_SET.md`
@@ -43,7 +64,7 @@ Figure 5: Cross-tissue portability and claim boundary.
   - `codexAnalysis/manuscript_text_drafts/cross_tissue_validation_boundary_results.md`
   - `codexAnalysis/manuscript_text_drafts/kidney_cross_tissue_benchmark_results.md`
 
-## Candidate Supplementary Figures
+## Final-Candidate Supplementary Figures
 
 Supplementary Figure S1: Full GSE193107 preprocessing QC.
 
@@ -83,7 +104,7 @@ Supplementary Figure S7: Source clipping and random seed stability.
 Supplementary Figure S8: Runtime, memory, and convergence diagnostics.
 
 - Suggested content: runtime per target, CUDA peak memory, representative loss curves if available.
-- Role: support Figure 4G and computational reproducibility.
+- Role: support computational reproducibility; runtime is not an active main Figure 4 claim.
 
 Supplementary Figure S9: Kidney evidence-boundary analysis.
 
@@ -104,6 +125,16 @@ Supplementary Figure S12: Liver/APAP task-design analysis.
 
 - Suggested content: annotations, injury markers, central/periportal markers, annotation-aware endpoints.
 - Role: support Figure 5C/E/F.
+
+Supplementary Figure S13: Targeted multi-gene extension contact sheets.
+
+- Suggested content: full-profile targeted fields across primary brain, sagittal brain, kidney, and liver/APAP exploratory datasets.
+- Role: provide full visual provenance for targeted-extension summaries in Figures 3-5 and supplementary claim-boundary review.
+
+Supplementary Figure S14: Marker-module and spot-level diagnostics.
+
+- Suggested content: representative CNS-myelin leave-one-marker-out analysis and barrier-edge discordant spot examples.
+- Role: support marker-module robustness and real-spot diagnostic checks; keep as representative supplementary evidence.
 
 ## Candidate Supplementary Tables
 
@@ -144,12 +175,12 @@ Supplementary Table S7: Kidney marker screen.
 
 Supplementary Table S8: Runtime and hardware.
 
-- Source: Figure 4G and runtime profiling logs.
+- Source: runtime profiling logs and targeted-extension run-status provenance.
 - Columns: hardware, PyTorch/CUDA version, profile, target, runtime, peak memory.
 
 ## Immediate Gaps To Fill Before Submission
 
 - Confirm exact source CSV/TSV file paths for each plotted metric panel and list them in figure-specific provenance notes.
-- Convert current rough assemblies into journal-compliant final figure PDFs after manual layout refinement.
+- Use the final-candidate Supplementary Figure S1-S14 folder unless upload-file size forces a split.
 - Add full Supplementary Table S1-S8 files or explicitly mark unavailable tables as not included.
 - Run a manuscript text QC pass using `codexAnalysis/manuscript_text_drafts/submission_claim_boundary_qc.md`.

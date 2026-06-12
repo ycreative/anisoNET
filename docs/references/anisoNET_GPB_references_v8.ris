@@ -1,0 +1,634 @@
+TY  - JOUR
+TI  - Method of the Year 2020: spatially resolved transcriptomics
+JO  - Nature Methods
+PY  - 2021
+VL  - 18
+IS  - 1
+SP  - 1
+DO  - 10.1038/s41592-020-01042-x
+ER  - 
+
+TY  - JOUR
+AU  - Stahl PL
+AU  - Salmen F
+AU  - Vickovic S
+AU  - Lundmark A
+AU  - Navarro JF
+AU  - Magnusson J
+TI  - Visualization and analysis of gene expression in tissue sections by spatial transcriptomics
+JO  - Science
+PY  - 2016
+VL  - 353
+SP  - 78-82
+DO  - 10.1126/science.aaf2403
+ER  - 
+
+TY  - JOUR
+AU  - Rao A
+AU  - Barkley D
+AU  - Franca GS
+AU  - Yanai I
+TI  - Exploring tissue architecture using spatial transcriptomics
+JO  - Nature
+PY  - 2021
+VL  - 596
+SP  - 211-20
+DO  - 10.1038/s41586-021-03634-9
+ER  - 
+
+TY  - JOUR
+AU  - Longo SK
+AU  - Guo MG
+AU  - Ji AL
+AU  - Khavari PA
+TI  - Integrating single-cell and spatial transcriptomics to elucidate intercellular tissue dynamics
+JO  - Nature Reviews Genetics
+PY  - 2021
+VL  - 22
+SP  - 627-44
+DO  - 10.1038/s41576-021-00370-8
+ER  - 
+
+TY  - JOUR
+AU  - Asp M
+AU  - Bergenstrahle J
+AU  - Lundeberg J
+TI  - Spatially resolved transcriptomes-next generation tools for tissue exploration
+JO  - Bioessays
+PY  - 2020
+VL  - 42
+SP  - e1900221
+DO  - 10.1002/bies.201900221
+ER  - 
+
+TY  - JOUR
+AU  - Moses L
+AU  - Pachter L
+TI  - Museum of spatial transcriptomics
+JO  - Nature Methods
+PY  - 2022
+VL  - 19
+SP  - 534-46
+ER  - 
+
+TY  - JOUR
+AU  - Palla G
+AU  - Spitzer H
+AU  - Klein M
+AU  - Fischer D
+AU  - Schaar AC
+AU  - Kuemmerle LB
+TI  - Squidpy: a scalable framework for spatial omics analysis
+JO  - Nature Methods
+PY  - 2022
+VL  - 19
+SP  - 171-8
+DO  - 10.1038/s41592-021-01358-2
+ER  - 
+
+TY  - JOUR
+AU  - Hu J
+AU  - Li X
+AU  - Coleman K
+AU  - Schroeder A
+AU  - Ma N
+AU  - Irwin DJ
+TI  - SpaGCN: Integrating gene expression, spatial location and histology to identify spatial domains and spatially variable genes by graph convolutional network
+JO  - Nature Methods
+PY  - 2021
+VL  - 18
+SP  - 1342-51
+DO  - 10.1038/s41592-021-01255-8
+ER  - 
+
+TY  - JOUR
+AU  - Kleshchevnikov V
+AU  - Shmatko A
+AU  - Dann E
+AU  - Aivazidis A
+AU  - King HW
+AU  - Li T
+TI  - Cell2location maps fine-grained cell types in spatial transcriptomics
+JO  - Nature Biotechnology
+PY  - 2022
+VL  - 40
+SP  - 661-71
+DO  - 10.1038/s41587-021-01139-4
+ER  - 
+
+TY  - JOUR
+AU  - Zhu J
+AU  - Wang Y
+AU  - Chang WY
+AU  - Malewska A
+AU  - Napolitano F
+AU  - Gahan JC
+TI  - Mapping cellular interactions from spatially resolved transcriptomics data
+JO  - Nature Methods
+PY  - 2024
+VL  - 21
+SP  - 1830-42
+ER  - 
+
+TY  - JOUR
+AU  - Palla G
+AU  - Fischer DS
+AU  - Regev A
+AU  - Theis FJ
+TI  - Spatial components of molecular tissue biology
+JO  - Nature Biotechnology
+PY  - 2022
+VL  - 40
+SP  - 308-18
+ER  - 
+
+TY  - JOUR
+AU  - Zhao E
+AU  - Stone MR
+AU  - Ren X
+AU  - Guenthoer J
+AU  - Smythe KS
+AU  - Pulliam T
+TI  - Spatial transcriptomics at subspot resolution with BayesSpace
+JO  - Nature Biotechnology
+PY  - 2021
+VL  - 39
+SP  - 1375-84
+DO  - 10.1038/s41587-021-00935-2
+ER  - 
+
+TY  - JOUR
+AU  - Shang L
+AU  - Zhou X
+TI  - Spatially aware dimension reduction for spatial transcriptomics
+JO  - Nature Communications
+PY  - 2022
+VL  - 13
+SP  - 7203
+ER  - 
+
+TY  - JOUR
+AU  - Maynard KR
+AU  - Collado-Torres L
+AU  - Weber LM
+AU  - Uytingco C
+AU  - Barry BK
+AU  - Williams SR
+TI  - Transcriptome-scale spatial gene expression in the human dorsolateral prefrontal cortex
+JO  - Nature Neuroscience
+PY  - 2021
+VL  - 24
+SP  - 425-36
+ER  - 
+
+TY  - JOUR
+AU  - Rodriques SG
+AU  - Stickels RR
+AU  - Goeva A
+AU  - Martin CA
+AU  - Murray E
+AU  - Vanderburg CR
+TI  - Slide-seq: A scalable technology for measuring genome-wide expression at high spatial resolution
+JO  - Science
+PY  - 2019
+VL  - 363
+SP  - 1463-7
+DO  - 10.1126/science.aaw1219
+ER  - 
+
+TY  - JOUR
+AU  - Stickels RR
+AU  - Murray E
+AU  - Kumar P
+AU  - Li J
+AU  - Marshall JL
+AU  - Di Bella DJ
+TI  - Highly sensitive spatial transcriptomics at near-cellular resolution with Slide-seqV2
+JO  - Nature Biotechnology
+PY  - 2021
+VL  - 39
+SP  - 313-9
+DO  - 10.1038/s41587-020-0739-1
+ER  - 
+
+TY  - JOUR
+AU  - Chen KH
+AU  - Boettiger AN
+AU  - Moffitt JR
+AU  - Wang S
+AU  - Zhuang X
+TI  - Spatially resolved, highly multiplexed RNA profiling in single cells
+JO  - Science
+PY  - 2015
+VL  - 348
+SP  - aaa6090
+DO  - 10.1126/science.aaa6090
+ER  - 
+
+TY  - JOUR
+AU  - Eng CHL
+AU  - Lawson M
+AU  - Zhu Q
+AU  - Dries R
+AU  - Koulena N
+AU  - Takei Y
+TI  - Transcriptome-scale super-resolved imaging in tissues by RNA seqFISH+
+JO  - Nature
+PY  - 2019
+VL  - 568
+SP  - 235-9
+DO  - 10.1038/s41586-019-1049-y
+ER  - 
+
+TY  - JOUR
+AU  - Chen A
+AU  - Liao S
+AU  - Cheng M
+AU  - Ma K
+AU  - Wu L
+AU  - Lai Y
+TI  - Spatiotemporal transcriptomic atlas of mouse organogenesis using DNA nanoball-patterned arrays
+JO  - Cell
+PY  - 2022
+VL  - 185
+SP  - 1777-92.e21
+ER  - 
+
+TY  - JOUR
+AU  - Raissi M
+AU  - Perdikaris P
+AU  - Karniadakis GE
+TI  - Physics-informed neural networks: A deep learning framework for solving forward and inverse problems involving nonlinear partial differential equations
+JO  - Journal of Computational Physics
+PY  - 2019
+VL  - 378
+SP  - 686-707
+DO  - 10.1016/j.jcp.2018.10.045
+ER  - 
+
+TY  - JOUR
+AU  - Karniadakis GE
+AU  - Kevrekidis IG
+AU  - Lu L
+AU  - Perdikaris P
+AU  - Wang S
+AU  - Yang L
+TI  - Physics-informed machine learning
+JO  - Nature Reviews Physics
+PY  - 2021
+VL  - 3
+SP  - 422-40
+DO  - 10.1038/s42254-021-00314-5
+ER  - 
+
+TY  - JOUR
+AU  - Cuomo S
+AU  - Di Cola VS
+AU  - Giampaolo F
+AU  - Rozza G
+AU  - Raissi M
+AU  - Piccialli F
+TI  - Scientific machine learning through physics-informed neural networks: where we are and what's next
+JO  - Journal of Scientific Computing
+PY  - 2022
+VL  - 92
+SP  - 88
+ER  - 
+
+TY  - JOUR
+AU  - Sirignano J
+AU  - Spiliopoulos K
+TI  - DGM: A deep learning algorithm for solving partial differential equations
+JO  - Journal of Computational Physics
+PY  - 2018
+VL  - 375
+SP  - 1339-64
+DO  - 10.1016/j.jcp.2018.08.029
+ER  - 
+
+TY  - BOOK
+AU  - Murray JD
+TI  - Mathematical Biology II: Spatial Models and Biomedical Applications
+JO  - Springer
+PY  - 2003
+ER  - 
+
+TY  - JOUR
+AU  - Tancik M
+AU  - Srinivasan PP
+AU  - Mildenhall B
+AU  - Fridovich-Keil S
+AU  - Raghavan N
+AU  - Singhal U
+TI  - Fourier features let networks learn high frequency functions in low dimensional domains
+JO  - Advances in Neural Information Processing Systems
+PY  - 2020
+VL  - 33
+SP  - 7537-47
+ER  - 
+
+TY  - JOUR
+AU  - Rahaman N
+AU  - Baratin A
+AU  - Arpit D
+AU  - Draxler F
+AU  - Lin M
+AU  - Hamprecht F
+TI  - On the spectral bias of neural networks
+JO  - Proceedings of the International Conference on Machine Learning
+PY  - 2019
+VL  - 97
+SP  - 5301-10
+ER  - 
+
+TY  - JOUR
+AU  - Canatar A
+AU  - Bordelon B
+AU  - Pehlevan C
+TI  - Spectral bias and task-model alignment explain generalization in kernel regression and infinitely wide neural networks
+JO  - Nature Communications
+PY  - 2021
+VL  - 12
+SP  - 2914
+ER  - 
+
+TY  - JOUR
+AU  - Wu C
+AU  - Tu T
+AU  - Xie M
+AU  - Wang Y
+AU  - Yan B
+AU  - Gong Y
+TI  - Spatially resolved transcriptome of the aging mouse brain
+JO  - Aging Cell
+PY  - 2024
+VL  - 23
+SP  - e14109
+DO  - 10.1111/acel.14109
+ER  - 
+
+TY  - JOUR
+AU  - Ximerakis M
+AU  - Lipnick SL
+AU  - Innes BT
+AU  - Simmons SK
+AU  - Adiconis X
+AU  - Dionne D
+TI  - Single-cell transcriptomic profiling of the aging mouse brain
+JO  - Nature Neuroscience
+PY  - 2019
+VL  - 22
+SP  - 1696-708
+DO  - 10.1038/s41593-019-0491-3
+ER  - 
+
+TY  - JOUR
+AU  - Kiss T
+AU  - Nyul-Toth A
+AU  - DelFavero J
+AU  - Balasubramanian P
+AU  - Tarantini S
+AU  - Faakye J
+TI  - Spatial transcriptomic analysis reveals inflammatory foci defined by senescent cells in the white matter, hippocampi and cortical grey matter in the aged mouse brain
+JO  - Geroscience
+PY  - 2022
+VL  - 44
+SP  - 661-81
+DO  - 10.1007/s11357-022-00521-7
+ER  - 
+
+TY  - JOUR
+AU  - Serrano-Pozo A
+AU  - Das S
+AU  - Hyman BT
+TI  - APOE and Alzheimer's disease: advances in genetics, pathophysiology, and therapeutic approaches
+JO  - Lancet Neurology
+PY  - 2021
+VL  - 20
+SP  - 68-80
+DO  - 10.1016/S1474-4422(20)30412-9
+ER  - 
+
+TY  - JOUR
+AU  - Escartin C
+AU  - Galea E
+AU  - Lakatos A
+AU  - O'Callaghan JP
+AU  - Petzold GC
+AU  - Serrano-Pozo A
+TI  - Reactive astrocyte nomenclature, definitions, and future directions
+JO  - Nature Neuroscience
+PY  - 2021
+VL  - 24
+SP  - 312-25
+DO  - 10.1038/s41593-020-00783-4
+ER  - 
+
+TY  - JOUR
+AU  - Pereira JB
+AU  - Janelidze S
+AU  - Smith R
+AU  - Mattsson-Carlgren N
+AU  - Palmqvist S
+AU  - Teunissen CE
+TI  - Plasma GFAP is an early marker of amyloid-beta but not tau pathology in Alzheimer's disease
+JO  - Brain
+PY  - 2021
+VL  - 144
+SP  - 3505-16
+ER  - 
+
+TY  - JOUR
+AU  - Liu H
+AU  - Yang Y
+AU  - Xia Y
+AU  - Zhu W
+AU  - Leak RK
+AU  - Wei Z
+TI  - Aging of cerebral white matter
+JO  - Ageing Research Reviews
+PY  - 2017
+VL  - 34
+SP  - 64-76
+DO  - 10.1016/j.arr.2016.11.006
+ER  - 
+
+TY  - GEN
+AU  - 10x Genomics
+TI  - Visium Spatial Gene Expression dataset: mouse kidney section, coronal
+JO  - 10x Genomics
+PY  - 2020
+UR  - https://www.10xgenomics.com/cn/datasets/mouse-kidney-section-coronal-1-standard-1-0-0
+ER  - 
+
+TY  - GEN
+AU  - 10x Genomics
+TI  - Visium Spatial Gene Expression datasets: mouse brain sagittal-anterior sections
+JO  - 10x Genomics
+PY  - 2020
+UR  - https://www.10xgenomics.com/datasets
+ER  - 
+
+TY  - JOUR
+AU  - De Ponti FF
+AU  - Bujko A
+AU  - Liu Z
+AU  - Collins PJ
+AU  - Schuermans S
+AU  - Maueroder C
+TI  - Spatially restricted and ontogenically distinct hepatic macrophages are required for tissue repair
+JO  - Immunity
+PY  - 2025
+VL  - 58
+SP  - 362-80.e10
+ER  - 
+
+TY  - JOUR
+AU  - Halpern KB
+AU  - Shenhav R
+AU  - Matcovitch-Natan O
+AU  - Toth B
+AU  - Lemze D
+AU  - Golan M
+TI  - Single-cell spatial reconstruction reveals global division of labour in the mammalian liver
+JO  - Nature
+PY  - 2017
+VL  - 542
+SP  - 352-6
+DO  - 10.1038/nature21065
+ER  - 
+
+TY  - JOUR
+AU  - Ben-Moshe S
+AU  - Itzkovitz S
+TI  - Spatial heterogeneity in the mammalian liver
+JO  - Nature Reviews Gastroenterology & Hepatology
+PY  - 2019
+VL  - 16
+SP  - 395-410
+DO  - 10.1038/s41575-019-0134-x
+ER  - 
+
+TY  - JOUR
+AU  - Ruifrok AC
+AU  - Johnston DA
+TI  - Quantification of histochemical staining by color deconvolution
+JO  - Analytical and Quantitative Cytology and Histology
+PY  - 2001
+VL  - 23
+SP  - 291-9
+ER  - 
+
+TY  - JOUR
+AU  - Otsu N
+TI  - A threshold selection method from gray-level histograms
+JO  - IEEE Transactions on Systems, Man, and Cybernetics
+PY  - 1979
+VL  - 9
+SP  - 62-6
+DO  - 10.1109/TSMC.1979.4310076
+ER  - 
+
+TY  - JOUR
+AU  - Hunter JD
+TI  - Matplotlib: A 2D graphics environment
+JO  - Computing in Science & Engineering
+PY  - 2007
+VL  - 9
+SP  - 90-5
+DO  - 10.1109/MCSE.2007.55
+ER  - 
+
+TY  - JOUR
+AU  - Harris CR
+AU  - Millman KJ
+AU  - van der Walt SJ
+AU  - Gommers R
+AU  - Virtanen P
+AU  - Cournapeau D
+TI  - Array programming with NumPy
+JO  - Nature
+PY  - 2020
+VL  - 585
+SP  - 357-62
+DO  - 10.1038/s41586-020-2649-2
+ER  - 
+
+TY  - JOUR
+AU  - Virtanen P
+AU  - Gommers R
+AU  - Oliphant TE
+AU  - Haberland M
+AU  - Reddy T
+AU  - Cournapeau D
+TI  - SciPy 1.0: fundamental algorithms for scientific computing in Python
+JO  - Nature Methods
+PY  - 2020
+VL  - 17
+SP  - 261-72
+DO  - 10.1038/s41592-019-0686-2
+ER  - 
+
+TY  - JOUR
+AU  - McKinney W
+TI  - Data structures for statistical computing in Python
+JO  - Proceedings of the 9th Python in Science Conference
+PY  - 2010
+SP  - 56-61
+ER  - 
+
+TY  - JOUR
+AU  - Pedregosa F
+AU  - Varoquaux G
+AU  - Gramfort A
+AU  - Michel V
+AU  - Thirion B
+AU  - Grisel O
+TI  - Scikit-learn: machine learning in Python
+JO  - Journal of Machine Learning Research
+PY  - 2011
+VL  - 12
+SP  - 2825-30
+ER  - 
+
+TY  - JOUR
+AU  - Wolf FA
+AU  - Angerer P
+AU  - Theis FJ
+TI  - SCANPY: large-scale single-cell gene expression data analysis
+JO  - Genome Biology
+PY  - 2018
+VL  - 19
+SP  - 15
+DO  - 10.1186/s13059-017-1382-0
+ER  - 
+
+TY  - JOUR
+AU  - Paszke A
+AU  - Gross S
+AU  - Massa F
+AU  - Lerer A
+AU  - Bradbury J
+AU  - Chanan G
+TI  - PyTorch: An imperative style, high-performance deep learning library
+JO  - Advances in Neural Information Processing Systems
+PY  - 2019
+VL  - 32
+ER  - 
+
+TY  - JOUR
+AU  - Shepard D
+TI  - A two-dimensional interpolation function for irregularly-spaced data
+JO  - Proceedings of the 1968 ACM National Conference
+PY  - 1968
+SP  - 517-24
+ER  - 
+
+TY  - JOUR
+AU  - Besag J
+TI  - Spatial interaction and the statistical analysis of lattice systems
+JO  - Journal of the Royal Statistical Society Series B
+PY  - 1974
+VL  - 36
+SP  - 192-236
+ER  - 
