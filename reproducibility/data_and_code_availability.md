@@ -4,7 +4,7 @@ Date: 2026-06-12
 
 ## Recommended Submission Text
 
-The source code for anisoNET, including Visium preprocessing utilities, scalar diffusion/resistance field construction, PyTorch-based scalar PINN inference, postprocessing, benchmarking scripts, metric summaries, and figure-panel generation workflows, will be made available at `[AUTHOR TO COMPLETE: GitHub repository URL]` and archived at `[AUTHOR TO COMPLETE: Zenodo DOI]`. A compact reviewer cache containing selected precomputed arrays, metric tables, final panel assets, Supplementary Figure S1-S14 files, and the supplementary table workbook will be provided as `[AUTHOR TO COMPLETE: reviewer-cache archive or portal-upload filename]` if required for peer-review auditing.
+The source code for anisoNET, including Visium preprocessing utilities, scalar diffusion/resistance field construction, PyTorch-based scalar PINN inference, postprocessing, benchmarking scripts, metric summaries, and figure-panel generation workflows, is prepared for release at https://github.com/ycreative/anisoNET. Reviewer-facing reproducibility materials are archived or reserved under Zenodo DOI https://doi.org/10.5281/zenodo.20663845. A compact reviewer cache containing selected precomputed arrays, metric tables, final panel assets, Supplementary Figure S1-S14 files, and the supplementary table workbook is provided as `anisoNET_GPB_reviewer_cache_v20260612.zip` for peer-review auditing.
 
 The current implementation should be cited as a scalar, tissue-constrained, barrier-aware spatial field inference workflow. It does not implement tensor-valued diffusion or the full divergence-form operator `div(D grad C)`.
 
@@ -16,4 +16,4 @@ Raw public sequencing matrices and histology images are not redistributed in the
 
 ## Current Decision
 
-Use GitHub + Zenodo as the primary public availability route, and keep a compact reviewer cache as the fast-audit route for large or selected precomputed intermediates.
+Use GitHub + Zenodo as the primary public availability route, and keep `anisoNET_GPB_reviewer_cache_v20260612.zip` as the fast-audit route for large or selected precomputed intermediates. Before formal submission, confirm that the GitHub repository contains the current staged files and that the Zenodo DOI is published or reviewer-accessible.

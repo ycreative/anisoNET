@@ -12,7 +12,7 @@ anisoNET is framed as a barrier-aware, tissue-constrained scalar spatial field i
 - `requirements.txt`: pip-style dependency list for non-conda installs.
 - `reproduce_figures.md`: commands and input expectations for regenerating the current Figure 1-5 panel assets and supplementary figure previews from existing outputs.
 - `repository_manifest.md`: what belongs in GitHub, Zenodo, and the reviewer cache.
-- `data_and_code_availability.md`: manuscript-ready data and code availability draft text with URL/DOI placeholders.
+- `data_and_code_availability.md`: manuscript-ready data and code availability draft text with the current GitHub URL and Zenodo DOI.
 - `zenodo_release_checklist.md`: release checklist for code, derived tables, panel assets, and reviewer cache.
 - `submission_release_decision.md`: current decision on GitHub, Zenodo, and reviewer-cache submission routes.
 
@@ -44,3 +44,9 @@ After public release, scripts should be run from a clean repository root with us
 - Figure provenance: `codexAnalysis/main_figure_provenance.md`
 - Script index: `codexAnalysis/reproducibility_script_index.md`
 - References: `codexAnalysis/references/anisoNET_GPB_references_v8.ris`
+
+## Current Public Identifiers
+
+- GitHub repository: https://github.com/ycreative/anisoNET
+- Zenodo DOI: https://doi.org/10.5281/zenodo.20663845
+- Reviewer cache filename: `anisoNET_GPB_reviewer_cache_v20260612.zip`

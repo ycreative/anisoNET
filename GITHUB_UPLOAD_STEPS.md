@@ -17,9 +17,9 @@ https://github.com/ycreative/anisoNET.git
 - GitHub web UI: open the repository, choose upload files, and upload the contents of this folder.
 - Git command line on a machine/session where Git is available.
 
-Recommended visibility:
+Current visibility target:
 
-- Start private for reviewer/package checks.
-- Make public only after final author, license, CITATION, and path-cleanup checks.
+- Public repository URL: https://github.com/ycreative/anisoNET
+- After each push, open the public repository page and check that the README mentions the current v8/v20260612 package and Zenodo DOI.
 
 Do not upload raw public datasets or full local analysis output trees to GitHub.

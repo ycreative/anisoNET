@@ -10,14 +10,15 @@ Recommended GPB submission strategy:
 
 Use the reviewer cache for bulky intermediate outputs rather than placing full `preflight`, `pinn`, `processed_visium`, or sweep folders in GitHub.
 
-Submission placeholders to replace:
+Current links and files to insert:
 
-- GitHub repository: `[AUTHOR TO COMPLETE: GitHub repository URL]`
-- Zenodo DOI: `[AUTHOR TO COMPLETE: Zenodo DOI or private-review DOI]`
-- Reviewer cache: `[AUTHOR TO COMPLETE: reviewer-cache archive path or portal-upload filename]`
+- GitHub repository: `https://github.com/ycreative/anisoNET`
+- Zenodo DOI: `https://doi.org/10.5281/zenodo.20663845`
+- Reviewer cache: `anisoNET_GPB_reviewer_cache_v20260612.zip`
 
 Current decision:
 
 - Target a GitHub + Zenodo pair for submission if the repository can be cleaned in time.
 - Keep a reviewer cache as a fallback and as a fast-audit supplement.
 - Do not promise unrestricted redistribution of raw public datasets; provide accessions and standardization scripts instead.
+- Before final submission, confirm that the current `github_repo/anisoNET` staging content has been pushed and that the Zenodo record is published or otherwise accessible to reviewers.
